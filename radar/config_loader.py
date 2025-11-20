@@ -25,7 +25,7 @@ def load_settings(config_path: Path | None = None) -> RadarSettings:
         raise FileNotFoundError(f"Config file not found: {config_file}")
 
     raw = yaml.safe_load(config_file.read_text(encoding="utf-8")) or {}
-    db_path = _resolve_path(raw.get("database_path", "reports/radar_data.db"), project_root=project_root)
+    db_path = _resolve_path(raw.get("database_path", "data/radar_data.duckdb"), project_root=project_root)
     report_dir = _resolve_path(raw.get("report_dir", "reports"), project_root=project_root)
     return RadarSettings(database_path=db_path, report_dir=report_dir)
 
