@@ -1,0 +1,7 @@
+# Global configuration for the Radar project
+
+# Path to the DuckDB database file
+database_path: "reports/radar_data.duckdb"
+
+# Directory to save generated reports
+report_dir: "reports"
