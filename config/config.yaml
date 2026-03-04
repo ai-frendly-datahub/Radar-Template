@@ -5,3 +5,6 @@ database_path: "data/radar_data.duckdb"
 
 # Directory to save generated reports
 report_dir: "reports"
+
+# Directory to save raw collected data as JSONL
+raw_data_dir: "data/raw"
