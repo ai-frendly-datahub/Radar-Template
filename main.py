@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import cast
 
 from radar.analyzer import apply_entity_rules
 from radar.collector import collect_sources
 from radar.config_loader import load_category_config, load_settings
+from radar.raw_logger import RawLogger
 from radar.reporter import generate_report
+from radar.search_index import SearchIndex
 from radar.storage import RadarStorage
 
 
@@ -31,11 +34,23 @@ def run(
         limit_per_source=per_source_limit,
         timeout=timeout,
     )
+
+    raw_logger = RawLogger(settings.raw_data_dir)
+    for source in category_cfg.sources:
+        source_articles = [article for article in collected if article.source == source.name]
+        if source_articles:
+            _ = raw_logger.log(source_articles, source_name=source.name)
+
     analyzed = apply_entity_rules(collected, category_cfg.entities)
 
     storage = RadarStorage(settings.database_path)
     storage.upsert_articles(analyzed)
-    storage.delete_older_than(keep_days)
+    _ = storage.delete_older_than(keep_days)
+
+    with SearchIndex(settings.search_db_path) as search_idx:
+        for article in analyzed:
+            search_idx.upsert(article.link, article.title, article.summary)
+
     recent_articles = storage.recent_articles(category_cfg.category_name, days=recent_days)
     storage.close()
 
@@ -47,7 +62,7 @@ def run(
     }
 
     output_path = settings.report_dir / f"{category_cfg.category_name}_report.html"
-    generate_report(
+    _ = generate_report(
         category=category_cfg,
         articles=recent_articles,
         output_path=output_path,
@@ -62,24 +77,43 @@ def run(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Lightweight Radar template runner")
-    parser.add_argument("--category", required=True, help="Category name matching a YAML in config/categories/")
-    parser.add_argument("--config", type=Path, default=None, help="Path to config/config.yaml (optional)")
-    parser.add_argument("--categories-dir", type=Path, default=None, help="Custom directory for category YAML files")
-    parser.add_argument("--per-source-limit", type=int, default=30, help="Max items to pull from each source")
-    parser.add_argument("--recent-days", type=int, default=7, help="Window (days) to show in the report")
-    parser.add_argument("--timeout", type=int, default=15, help="HTTP timeout per request (seconds)")
-    parser.add_argument("--keep-days", type=int, default=90, help="Retention window for stored items")
+    _ = parser.add_argument("--category", required=True, help="Category name matching a YAML in config/categories/")
+    _ = parser.add_argument("--config", type=Path, default=None, help="Path to config/config.yaml (optional)")
+    _ = parser.add_argument("--categories-dir", type=Path, default=None, help="Custom directory for category YAML files")
+    _ = parser.add_argument("--per-source-limit", type=int, default=30, help="Max items to pull from each source")
+    _ = parser.add_argument("--recent-days", type=int, default=7, help="Window (days) to show in the report")
+    _ = parser.add_argument("--timeout", type=int, default=15, help="HTTP timeout per request (seconds)")
+    _ = parser.add_argument("--keep-days", type=int, default=90, help="Retention window for stored items")
     return parser.parse_args()
 
 
+def _to_path(value: object) -> Path | None:
+    if isinstance(value, Path):
+        return value
+    return None
+
+
+def _to_int(value: object, default: int) -> int:
+    if isinstance(value, bool):
+        return default
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        try:
+            return int(value)
+        except ValueError:
+            return default
+    return default
+
+
 if __name__ == "__main__":
-    args = parse_args()
-    run(
-        category=args.category,
-        config_path=args.config,
-        categories_dir=args.categories_dir,
-        per_source_limit=args.per_source_limit,
-        recent_days=args.recent_days,
-        timeout=args.timeout,
-        keep_days=args.keep_days,
+    args = cast(dict[str, object], vars(parse_args()))
+    _ = run(
+        category=str(args.get("category", "")),
+        config_path=_to_path(args.get("config")),
+        categories_dir=_to_path(args.get("categories_dir")),
+        per_source_limit=_to_int(args.get("per_source_limit"), 30),
+        recent_days=_to_int(args.get("recent_days"), 7),
+        timeout=_to_int(args.get("timeout"), 15),
+        keep_days=_to_int(args.get("keep_days"), 90),
     )

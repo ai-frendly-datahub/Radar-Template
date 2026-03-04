@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Iterable
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, List
+from typing import Protocol, cast
 
 from jinja2 import Template
 
 from .models import Article, CategoryConfig
+
+
+class _TemplateRenderer(Protocol):
+    def render(self, **context: object) -> str: ...
 
 
 def generate_report(
@@ -15,8 +20,8 @@ def generate_report(
     category: CategoryConfig,
     articles: Iterable[Article],
     output_path: Path,
-    stats: dict,
-    errors: List[str] | None = None,
+    stats: dict[str, int],
+    errors: list[str] | None = None,
 ) -> Path:
     """Render a simple HTML report for the collected articles."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -24,21 +29,21 @@ def generate_report(
     articles_list = list(articles)
     entity_counts = _count_entities(articles_list)
 
-    template = Template(_REPORT_TEMPLATE)
+    template = cast(_TemplateRenderer, Template(_REPORT_TEMPLATE))
     rendered = template.render(
-        category=category,
-        articles=articles_list,
-        generated_at=datetime.now(timezone.utc),
-        stats=stats,
-        entity_counts=entity_counts,
-        errors=errors or [],
-    )
-    output_path.write_text(rendered, encoding="utf-8")
+            category=category,
+            articles=articles_list,
+            generated_at=datetime.now(timezone.utc),
+            stats=stats,
+            entity_counts=entity_counts,
+            errors=errors or [],
+        )
+    _ = output_path.write_text(rendered, encoding="utf-8")
     return output_path
 
 
-def _count_entities(articles: Iterable[Article]) -> Counter:
-    counter: Counter = Counter()
+def _count_entities(articles: Iterable[Article]) -> Counter[str]:
+    counter: Counter[str] = Counter()
     for article in articles:
         for entity_name, keywords in (article.matched_entities or {}).items():
             counter[entity_name] += len(keywords)

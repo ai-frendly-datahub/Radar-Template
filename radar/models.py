@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 
 @dataclass
@@ -17,7 +16,7 @@ class Source:
 class EntityDefinition:
     name: str
     display_name: str
-    keywords: List[str]
+    keywords: list[str]
 
 
 @dataclass
@@ -25,21 +24,23 @@ class Article:
     title: str
     link: str
     summary: str
-    published: Optional[datetime]
+    published: datetime | None
     source: str
     category: str
-    matched_entities: Dict[str, List[str]] = field(default_factory=dict)
+    matched_entities: dict[str, list[str]] = field(default_factory=dict)
 
 
 @dataclass
 class CategoryConfig:
     category_name: str
     display_name: str
-    sources: List[Source]
-    entities: List[EntityDefinition]
+    sources: list[Source]
+    entities: list[EntityDefinition]
 
 
 @dataclass
 class RadarSettings:
     database_path: Path
     report_dir: Path
+    raw_data_dir: Path
+    search_db_path: Path

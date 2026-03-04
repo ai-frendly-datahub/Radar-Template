@@ -2,6 +2,14 @@
 
 WineRadar에서 가져온 경량 레이더 템플릿입니다. 카테고리 YAML만 만들고 `python main.py --category <name>`를 실행하면 RSS 수집 → 키워드 태깅 → DuckDB 저장 → HTML 리포트 생성까지 한 번에 처리합니다.
 
+## 프로젝트 목표
+
+- **표준 템플릿 제공**: 새로운 Radar 프로젝트를 5분 안에 시작할 수 있는 경량 참조 구현
+- **파이프라인 정의**: RSS 수집 → 키워드 엔티티 태깅 → DuckDB 저장 → HTML 리포트의 표준 처리 흐름
+- **공통 아키텍처 패턴**: JSONL 원본 보존, SQLite FTS5 전문검색, MCP 서버(5개 도구), 자연어 쿼리 파서
+- **즉시 커스터마이징**: 패키지명 변경 + 카테고리 YAML 작성만으로 도메인 특화 프로젝트로 전환
+- **CI/CD 내장**: GitHub Actions 일일 수집 + GitHub Pages 리포트 자동 배포
+
 ## 빠른 시작
 1. `config/categories/_template.yaml`을 복사해 새 YAML을 만들고 소스/키워드를 채웁니다. (예시: `coffee.yaml`)
 2. 가상환경을 만들고 의존성을 설치합니다.
