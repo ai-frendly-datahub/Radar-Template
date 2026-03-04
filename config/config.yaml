@@ -8,3 +8,6 @@ report_dir: "reports"
 
 # Directory to save raw collected data as JSONL
 raw_data_dir: "data/raw"
+
+# Path to the SQLite FTS5 sidecar database file
+search_db_path: "data/search_index.db"

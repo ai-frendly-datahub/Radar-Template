@@ -43,3 +43,4 @@ class RadarSettings:
     database_path: Path
     report_dir: Path
     raw_data_dir: Path
+    search_db_path: Path

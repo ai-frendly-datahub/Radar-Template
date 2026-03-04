@@ -55,7 +55,13 @@ def load_settings(config_path: Path | None = None) -> RadarSettings:
     db_path = _resolve_path(_string_value(raw, "database_path", "data/radar_data.duckdb"), project_root=project_root)
     report_dir = _resolve_path(_string_value(raw, "report_dir", "reports"), project_root=project_root)
     raw_data_dir = _resolve_path(_string_value(raw, "raw_data_dir", "data/raw"), project_root=project_root)
-    return RadarSettings(database_path=db_path, report_dir=report_dir, raw_data_dir=raw_data_dir)
+    search_db_path = _resolve_path(_string_value(raw, "search_db_path", "data/search_index.db"), project_root=project_root)
+    return RadarSettings(
+        database_path=db_path,
+        report_dir=report_dir,
+        raw_data_dir=raw_data_dir,
+        search_db_path=search_db_path,
+    )
 
 
 def load_category_config(category_name: str, categories_dir: Path | None = None) -> CategoryConfig:
