@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>My Category Radar - Radar Report</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: #f6f8fb; color: #0f172a; }
+    h1 { margin: 0 0 8px 0; }
+    h2 { margin: 24px 0 12px 0; }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 12px 0 24px 0; }
+    .card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .muted { color: #475569; font-size: 13px; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #e0f2fe; color: #0369a1; font-size: 12px; margin-right: 6px; }
+    .chip { display: inline-block; padding: 4px 8px; border-radius: 8px; background: #0ea5e9; color: white; font-size: 12px; margin: 4px 4px 0 0; }
+    .articles { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+    a { color: #0f172a; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    footer { margin-top: 32px; color: #475569; font-size: 13px; }
+    .errors { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 12px; border-radius: 10px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>My Category Radar</h1>
+  <div class="muted">Generated at 2026-03-08T19:18:06.709777+00:00 (UTC)</div>
+
+  <div class="summary">
+    <div class="card"><div class="muted">Sources</div><strong>1</strong></div>
+    <div class="card"><div class="muted">Collected</div><strong>0</strong></div>
+    <div class="card"><div class="muted">With entity hits</div><strong>0</strong></div>
+    <div class="card"><div class="muted">Recent window (days)</div><strong>7</strong></div>
+  </div>
+
+  
+    <div class="errors">
+      <strong>Collection errors</strong><br>
+      • Example News RSS: HTTPSConnectionPool(host='www.example.com', port=443): Max retries exceeded with url: /feed (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016)')))<br>
+    </div>
+  
+
+  
+
+  <h2>Recent articles</h2>
+  <div class="articles">
+    
+    
+      <div class="card">No articles in the recent window.</div>
+    
+  </div>
+
+  <footer>
+    This is a lightweight template — extend collectors/analyzers as needed.
+  </footer>
+</body>
+</html>
