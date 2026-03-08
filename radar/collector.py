@@ -15,6 +15,7 @@ from tenacity import (
     wait_exponential,
 )
 
+from .exceptions import NetworkError, ParseError, SourceError
 from .models import Article, Source
 
 
@@ -61,8 +62,12 @@ def collect_sources(
             articles.extend(
                 _collect_single(source, category=category, limit=limit_per_source, timeout=timeout)
             )
-        except Exception as exc:  # noqa: BLE001 - surface errors to the caller
+        except SourceError as exc:
+            errors.append(str(exc))
+        except (NetworkError, ParseError) as exc:
             errors.append(f"{source.name}: {exc}")
+        except Exception as exc:
+            errors.append(f"{source.name}: Unexpected error - {type(exc).__name__}: {exc}")
 
     return articles, errors
 
@@ -75,35 +80,41 @@ def _collect_single(
     timeout: int,
 ) -> List[Article]:
     if source.type.lower() != "rss":
-        raise ValueError(
-            f"Unsupported source type '{source.type}'. Only 'rss' is supported in the template."
-        )
+        raise SourceError(source.name, f"Unsupported source type '{source.type}'")
 
-    response = _fetch_url_with_retry(source.url, timeout)
+    try:
+        response = _fetch_url_with_retry(source.url, timeout)
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as exc:
+        raise NetworkError(f"Network error fetching {source.name}: {exc}") from exc
+    except requests.exceptions.RequestException as exc:
+        raise SourceError(source.name, f"Request failed: {exc}", exc) from exc
 
-    feed = feedparser.parse(response.content)
-    items: List[Article] = []
+    try:
+        feed = feedparser.parse(response.content)
+        items: List[Article] = []
 
-    for entry in feed.entries[:limit]:
-        published = _extract_datetime(entry)
-        summary = entry.get("summary", "") or entry.get("description", "") or ""
-        if not summary:
-            _content = entry.get("content", [])
-            if _content:
-                summary = _content[0].get("value", "")
+        for entry in feed.entries[:limit]:
+            published = _extract_datetime(entry)
+            summary = entry.get("summary", "") or entry.get("description", "") or ""
+            if not summary:
+                _content = entry.get("content", [])
+                if _content:
+                    summary = _content[0].get("value", "")
 
-        items.append(
-            Article(
-                title=html.unescape((entry.get("title") or "").strip()) or "(no title)",
-                link=(entry.get("link") or "").strip(),
-                summary=html.unescape(summary.strip()),
-                published=published,
-                source=source.name,
-                category=category,
+            items.append(
+                Article(
+                    title=html.unescape((entry.get("title") or "").strip()) or "(no title)",
+                    link=(entry.get("link") or "").strip(),
+                    summary=html.unescape(summary.strip()),
+                    published=published,
+                    source=source.name,
+                    category=category,
+                )
             )
-        )
 
-    return items
+        return items
+    except Exception as exc:
+        raise ParseError(f"Failed to parse feed from {source.name}: {exc}") from exc
 
 
 def _extract_datetime(entry: dict) -> datetime | None:
