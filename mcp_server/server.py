@@ -6,13 +6,14 @@ import os
 from pathlib import Path
 from typing import Callable, Protocol, cast
 
-from radar.mcp_server.tools import (
+from mcp_server.tools import (
     handle_price_watch,
     handle_recent_updates,
     handle_search,
     handle_sql,
     handle_top_trends,
 )
+
 
 def _db_path() -> Path:
     return Path(os.getenv("RADAR_DB_PATH", "data/radar_data.duckdb"))
@@ -198,12 +199,14 @@ def create_app() -> _McpApp:
     @app.list_tools()
     async def list_tools() -> list[object]:
         return [tool_ctor(**tool_spec) for tool_spec in _list_tool_specs()]
+
     _ = list_tools
 
     @app.call_tool()
     async def call_tool(name: str, arguments: object) -> list[object]:
         result = _call_tool_handler(name, arguments)
         return [text_content_ctor(type="text", text=result)]
+
     _ = call_tool
 
     return app
