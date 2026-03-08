@@ -1,5 +1,8 @@
 # Radar-Template - 레이더 템플릿
 
+**🌐 Live Report**: https://ai-frendly-datahub.github.io/Radar-Template/
+
+
 Standard 레이더의 기본 구조와 패턴을 정의하는 캐노니컬 템플릿입니다.
 
 ## 프로젝트 목표
