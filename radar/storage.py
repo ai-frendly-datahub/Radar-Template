@@ -116,6 +116,7 @@ class RadarStorage:
                     source=row_map.get("source", ""),
                     category=row_map.get("category", ""),
                     matched_entities=entities,
+                    collected_at=row_map.get("collected_at"),
                 )
             )
         return results
@@ -127,5 +128,7 @@ class RadarStorage:
             "SELECT COUNT(*) FROM articles WHERE COALESCE(published, collected_at) < ?", [cutoff]
         ).fetchone()
         to_delete = count_row[0] if count_row else 0
-        self.conn.execute("DELETE FROM articles WHERE COALESCE(published, collected_at) < ?", [cutoff])
+        self.conn.execute(
+            "DELETE FROM articles WHERE COALESCE(published, collected_at) < ?", [cutoff]
+        )
         return to_delete
