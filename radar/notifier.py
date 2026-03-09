@@ -1,3 +1,8 @@
+# Canonical Notifier implementation for AI-Friendly DataHub
+# Synced to: HomeRadar, BenefitRadar, WineRadar, TrendRadar, PriceRadar
+# DO NOT MODIFY core classes (Notifier, NotificationPayload, EmailNotifier, WebhookNotifier, CompositeNotifier)
+# Domain-specific detection functions (detect_*_notifications) belong in each domain repo
+
 from __future__ import annotations
 
 import smtplib
@@ -5,7 +10,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from email.mime.text import MIMEText
-from typing import Protocol
+from typing import Optional, Protocol
 
 import requests
 import structlog
@@ -23,7 +28,7 @@ class NotificationPayload:
     matched_count: int
     errors_count: int
     timestamp: datetime
-    report_url: str | None = None
+    report_url: Optional[str] = None
 
     def to_dict(self) -> dict[str, object]:
         """Convert payload to dictionary for JSON serialization."""
