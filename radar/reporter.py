@@ -4,12 +4,13 @@ import re
 import shutil
 from collections import Counter
 from collections.abc import Iterable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
 from .models import Article, CategoryConfig
+
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
 
@@ -60,7 +61,7 @@ def generate_report(
         }
         articles_json.append(article_data)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     env = _get_jinja_env()
     template = env.get_template("report.html")
@@ -143,7 +144,7 @@ def generate_index_html(report_dir: Path) -> Path:
     template = env.get_template("index.html")
     rendered = template.render(
         reports=reports,
-        generated_at=datetime.now(timezone.utc),
+        generated_at=datetime.now(UTC),
     )
 
     index_path = report_dir / "index.html"

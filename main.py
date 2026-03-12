@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import UTC
 from pathlib import Path
 from typing import cast
 
@@ -8,11 +9,11 @@ from radar.analyzer import apply_entity_rules
 from radar.collector import collect_sources
 from radar.common.validators import validate_article
 from radar.config_loader import load_category_config, load_settings
+from radar.models import Article
 from radar.raw_logger import RawLogger
 from radar.reporter import generate_index_html, generate_report
 from radar.search_index import SearchIndex
 from radar.storage import RadarStorage
-from radar.models import Article
 
 
 def _send_notifications(
@@ -25,7 +26,7 @@ def _send_notifications(
     report_path: Path,
 ) -> None:
     import os
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     email_to = os.environ.get("NOTIFICATION_EMAIL")
     webhook_url = os.environ.get("NOTIFICATION_WEBHOOK")
@@ -46,7 +47,7 @@ def _send_notifications(
         collected_count=collected_count,
         matched_count=matched_count,
         errors_count=errors_count,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         report_url=str(report_path),
     )
 
