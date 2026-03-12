@@ -2,16 +2,17 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 from radar.analyzer import apply_entity_rules
 from radar.collector import collect_sources
 from radar.common.validators import validate_article
 from radar.config_loader import load_category_config, load_settings
 from radar.raw_logger import RawLogger
-from radar.reporter import generate_report
+from radar.reporter import generate_index_html, generate_report
 from radar.search_index import SearchIndex
 from radar.storage import RadarStorage
+from radar.models import Article
 
 
 def _send_notifications(
@@ -72,8 +73,8 @@ def _send_notifications(
 def run(
     *,
     category: str,
-    config_path: Optional[Path] = None,
-    categories_dir: Optional[Path] = None,
+    config_path: Path | None = None,
+    categories_dir: Path | None = None,
     per_source_limit: int = 30,
     recent_days: int = 7,
     timeout: int = 15,
@@ -86,6 +87,8 @@ def run(
     print(
         f"[Radar] Collecting '{category_cfg.display_name}' from {len(category_cfg.sources)} sources..."
     )
+    collected: list[Article]
+    errors: list[str]
     collected, errors = collect_sources(
         category_cfg.sources,
         category=category_cfg.category_name,
@@ -102,8 +105,8 @@ def run(
     analyzed = apply_entity_rules(collected, category_cfg.entities)
 
     # Validate articles for data quality
-    validated_articles = []
-    validation_errors = []
+    validated_articles: list[Article] = []
+    validation_errors: list[str] = []
     for article in analyzed:
         is_valid, validation_msgs = validate_article(article)
         if is_valid:
@@ -122,10 +125,12 @@ def run(
         for article in validated_articles:
             search_idx.upsert(article.link, article.title, article.summary)
 
-    recent_articles = storage.recent_articles(category_cfg.category_name, days=recent_days)
+    recent_articles: list[Article] = storage.recent_articles(
+        category_cfg.category_name, days=recent_days
+    )
     storage.close()
 
-    stats = {
+    stats: dict[str, int] = {
         "sources": len(category_cfg.sources),
         "collected": len(collected),
         "matched": sum(1 for a in collected if a.matched_entities),
@@ -141,6 +146,7 @@ def run(
         stats=stats,
         errors=errors,
     )
+    _ = generate_index_html(settings.report_dir)
     print(f"[Radar] Report generated at {output_path}")
     if errors:
         print(f"[Radar] {len(errors)} source(s) had issues. See report for details.")
@@ -189,7 +195,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _to_path(value: object) -> Optional[Path]:
+def _to_path(value: object) -> Path | None:
     if isinstance(value, Path):
         return value
     return None
