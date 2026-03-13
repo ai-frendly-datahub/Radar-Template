@@ -26,8 +26,9 @@ class SourceCircuitBreakerListener(CircuitBreakerListener):
             after=new_state.name,
         )
 
-
-    def before_call(self, cb: CircuitBreaker, func: object, *args: object, **kwargs: object) -> None:
+    def before_call(
+        self, cb: CircuitBreaker, func: object, *args: object, **kwargs: object
+    ) -> None:
         """Called before the circuit breaker executes a function."""
 
     def failure(
