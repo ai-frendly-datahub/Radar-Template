@@ -17,7 +17,7 @@ def _utc_naive(dt: datetime | None) -> datetime | None:
     if dt is None:
         return None
     if dt.tzinfo:
-        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+        return dt.astimezone(UTC).replace(tzinfo=None)
     return dt
 
 
@@ -106,7 +106,7 @@ class RadarStorage:
 
     def recent_articles(self, category: str, *, days: int = 7, limit: int = 200) -> list[Article]:
         """최근 N일 내 기사 반환."""
-        since = _utc_naive(datetime.now(timezone.utc) - timedelta(days=days))
+        since = _utc_naive(datetime.now(UTC) - timedelta(days=days))
         cur = self.conn.execute(
             """
             SELECT category, source, title, link, summary, published, collected_at, entities_json
@@ -165,7 +165,7 @@ class RadarStorage:
 
     def delete_older_than(self, days: int) -> int:
         """보존 기간 밖 데이터 삭제."""
-        cutoff = _utc_naive(datetime.now(timezone.utc) - timedelta(days=days))
+        cutoff = _utc_naive(datetime.now(UTC) - timedelta(days=days))
         count_row = self.conn.execute(
             "SELECT COUNT(*) FROM articles WHERE COALESCE(published, collected_at) < ?", [cutoff]
         ).fetchone()

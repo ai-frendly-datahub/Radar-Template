@@ -239,7 +239,7 @@ def _extract_datetime(entry: Mapping[str, Any]) -> datetime | None:
             try:
                 dt = parsedate_to_datetime(str(raw))
                 if dt and dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=timezone.utc)
+                    dt = dt.replace(tzinfo=UTC)
                 return dt
             except Exception:
                 continue
