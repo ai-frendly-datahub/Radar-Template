@@ -61,7 +61,7 @@ def generate_report(
         }
         articles_json.append(article_data)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(tz=UTC)
 
     env = _get_jinja_env()
     template = env.get_template("report.html")
