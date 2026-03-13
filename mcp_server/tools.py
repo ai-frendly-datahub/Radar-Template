@@ -3,14 +3,15 @@ from __future__ import annotations
 import json
 import re
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 import duckdb
 
 from radar.nl_query import parse_query
 from radar.search_index import SearchIndex
+
 
 _ALLOWED_SQL = re.compile(r"^\s*(SELECT|WITH|EXPLAIN)\b", re.IGNORECASE)
 
@@ -26,14 +27,16 @@ def _format_rows(columns: list[str], rows: list[tuple[object, ...]]) -> str:
 
     header = " | ".join(col.ljust(widths[idx]) for idx, col in enumerate(columns))
     divider = "-+-".join("-" * widths[idx] for idx in range(len(columns)))
-    body = [" | ".join(value.ljust(widths[idx]) for idx, value in enumerate(row)) for row in text_rows]
+    body = [
+        " | ".join(value.ljust(widths[idx]) for idx, value in enumerate(row)) for row in text_rows
+    ]
     return "\n".join([header, divider, *body])
 
 
 def _filter_links_by_days(*, db_path: Path, links: list[str], days: int) -> set[str]:
     if not links:
         return set()
-    cutoff = datetime.now() - timedelta(days=days)
+    cutoff = datetime.now(UTC) - timedelta(days=days)
     placeholders = ", ".join("?" for _ in links)
     conn = duckdb.connect(str(db_path), read_only=True)
     try:
@@ -86,7 +89,7 @@ def handle_recent_updates(*, db_path: Path, days: int = 7, limit: int = 20) -> s
     if limit <= 0:
         return "No recent updates found."
 
-    cutoff = datetime.now() - timedelta(days=days)
+    cutoff = datetime.now(UTC) - timedelta(days=days)
     conn = duckdb.connect(str(db_path), read_only=True)
     try:
         cursor = conn.execute(
@@ -134,7 +137,7 @@ def handle_top_trends(*, db_path: Path, days: int = 7, limit: int = 10) -> str:
     if limit <= 0:
         return "No trend data available."
 
-    cutoff = datetime.now() - timedelta(days=days)
+    cutoff = datetime.now(UTC) - timedelta(days=days)
     conn = duckdb.connect(str(db_path), read_only=True)
     try:
         rows = conn.execute(
@@ -145,7 +148,7 @@ def handle_top_trends(*, db_path: Path, days: int = 7, limit: int = 10) -> str:
             """,
             [cutoff],
         ).fetchall()
-        entity_rows = cast(list[tuple[Optional[str]]], rows)
+        entity_rows = cast(list[tuple[str | None]], rows)
     finally:
         conn.close()
 

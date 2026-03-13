@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import argparse
+from datetime import UTC
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 from radar.analyzer import apply_entity_rules
 from radar.collector import collect_sources
 from radar.common.validators import validate_article
 from radar.config_loader import load_category_config, load_settings
+from radar.date_storage import apply_date_storage_policy
+from radar.models import Article
 from radar.raw_logger import RawLogger
-from radar.reporter import generate_report
+from radar.reporter import generate_index_html, generate_report
 from radar.search_index import SearchIndex
 from radar.storage import RadarStorage
 
@@ -24,7 +27,7 @@ def _send_notifications(
     report_path: Path,
 ) -> None:
     import os
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     email_to = os.environ.get("NOTIFICATION_EMAIL")
     webhook_url = os.environ.get("NOTIFICATION_WEBHOOK")
@@ -45,7 +48,7 @@ def _send_notifications(
         collected_count=collected_count,
         matched_count=matched_count,
         errors_count=errors_count,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         report_url=str(report_path),
     )
 
@@ -72,12 +75,15 @@ def _send_notifications(
 def run(
     *,
     category: str,
-    config_path: Optional[Path] = None,
-    categories_dir: Optional[Path] = None,
+    config_path: Path | None = None,
+    categories_dir: Path | None = None,
     per_source_limit: int = 30,
     recent_days: int = 7,
     timeout: int = 15,
     keep_days: int = 90,
+    keep_raw_days: int = 180,
+    keep_report_days: int = 90,
+    snapshot_db: bool = False,
 ) -> Path:
     """Execute the lightweight collect -> analyze -> report pipeline."""
     settings = load_settings(config_path)
@@ -86,6 +92,8 @@ def run(
     print(
         f"[Radar] Collecting '{category_cfg.display_name}' from {len(category_cfg.sources)} sources..."
     )
+    collected: list[Article]
+    errors: list[str]
     collected, errors = collect_sources(
         category_cfg.sources,
         category=category_cfg.category_name,
@@ -102,8 +110,8 @@ def run(
     analyzed = apply_entity_rules(collected, category_cfg.entities)
 
     # Validate articles for data quality
-    validated_articles = []
-    validation_errors = []
+    validated_articles: list[Article] = []
+    validation_errors: list[str] = []
     for article in analyzed:
         is_valid, validation_msgs = validate_article(article)
         if is_valid:
@@ -122,10 +130,12 @@ def run(
         for article in validated_articles:
             search_idx.upsert(article.link, article.title, article.summary)
 
-    recent_articles = storage.recent_articles(category_cfg.category_name, days=recent_days)
+    recent_articles: list[Article] = storage.recent_articles(
+        category_cfg.category_name, days=recent_days
+    )
     storage.close()
 
-    stats = {
+    stats: dict[str, int] = {
         "sources": len(category_cfg.sources),
         "collected": len(collected),
         "matched": sum(1 for a in collected if a.matched_entities),
@@ -141,7 +151,19 @@ def run(
         stats=stats,
         errors=errors,
     )
+    _ = generate_index_html(settings.report_dir)
+    date_storage = apply_date_storage_policy(
+        database_path=settings.database_path,
+        raw_data_dir=settings.raw_data_dir,
+        report_dir=settings.report_dir,
+        keep_raw_days=keep_raw_days,
+        keep_report_days=keep_report_days,
+        snapshot_db=snapshot_db,
+    )
     print(f"[Radar] Report generated at {output_path}")
+    snapshot_path = date_storage.get("snapshot_path")
+    if isinstance(snapshot_path, str) and snapshot_path:
+        print(f"[Radar] Snapshot saved at {snapshot_path}")
     if errors:
         print(f"[Radar] {len(errors)} source(s) had issues. See report for details.")
 
@@ -181,6 +203,18 @@ def parse_args() -> argparse.Namespace:
         "--keep-days", type=int, default=90, help="Retention window for stored items"
     )
     _ = parser.add_argument(
+        "--keep-raw-days", type=int, default=180, help="Retention window for raw JSONL directories"
+    )
+    _ = parser.add_argument(
+        "--keep-report-days", type=int, default=90, help="Retention window for dated HTML reports"
+    )
+    _ = parser.add_argument(
+        "--snapshot-db",
+        action="store_true",
+        default=False,
+        help="Create a dated DuckDB snapshot after each run",
+    )
+    _ = parser.add_argument(
         "--generate-report",
         action="store_true",
         default=False,
@@ -189,7 +223,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _to_path(value: object) -> Optional[Path]:
+def _to_path(value: object) -> Path | None:
     if isinstance(value, Path):
         return value
     return None
@@ -218,4 +252,7 @@ if __name__ == "__main__":
         recent_days=_to_int(args.get("recent_days"), 7),
         timeout=_to_int(args.get("timeout"), 15),
         keep_days=_to_int(args.get("keep_days"), 90),
+        keep_raw_days=_to_int(args.get("keep_raw_days"), 180),
+        keep_report_days=_to_int(args.get("keep_report_days"), 90),
+        snapshot_db=bool(args.get("snapshot_db", False)),
     )
