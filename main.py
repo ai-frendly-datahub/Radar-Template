@@ -9,6 +9,7 @@ from radar.analyzer import apply_entity_rules
 from radar.collector import collect_sources
 from radar.common.validators import validate_article
 from radar.config_loader import load_category_config, load_settings
+from radar.date_storage import apply_date_storage_policy
 from radar.models import Article
 from radar.raw_logger import RawLogger
 from radar.reporter import generate_index_html, generate_report
@@ -152,6 +153,14 @@ def run(
     )
     _ = generate_index_html(settings.report_dir)
     print(f"[Radar] Report generated at {output_path}")
+    date_storage = apply_date_storage_policy(
+        database_path=settings.database_path,
+        raw_data_dir=settings.raw_data_dir,
+        report_dir=settings.report_dir,
+        keep_raw_days=keep_raw_days,
+        keep_report_days=keep_report_days,
+        snapshot_db=snapshot_db,
+    )
     snapshot_path = date_storage.get("snapshot_path")
     if isinstance(snapshot_path, str) and snapshot_path:
         print(f"[Radar] Snapshot saved at {snapshot_path}")
