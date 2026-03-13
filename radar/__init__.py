@@ -1,5 +1,3 @@
-import importlib
+"""Radar-Template - 레이더 템플릿"""
 
-
-_ = importlib.import_module("radar_core")
-_core_version = "radar-core"
+__version__ = "0.2.0"

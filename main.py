@@ -47,7 +47,7 @@ def _send_notifications(
         collected_count=collected_count,
         matched_count=matched_count,
         errors_count=errors_count,
-        timestamp=datetime.now(UTC),
+        timestamp=datetime.now(timezone.utc),
         report_url=str(report_path),
     )
 
