@@ -44,6 +44,9 @@ mcp = [
     "mcp>=1.0.0",
     "pybreaker>=1.0.0",
 ]
+korean = [
+    "kiwipiepy>=0.17",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
@@ -63,7 +66,7 @@ Repository = "https://github.com/ai-frendly-datahub/Radar-Template"
 Issues = "https://github.com/ai-frendly-datahub/Radar-Template/issues"
 
 [tool.setuptools.packages.find]
-include = ["radar", "radar.*"]
+include = ["radar", "radar.*", "radar_core", "radar_core.*"]
 
 [tool.setuptools.package-data]
 radar = ["templates/**/*"]
