@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 import feedparser
 import requests
+import structlog
 from pybreaker import CircuitBreakerError
 from requests.adapters import HTTPAdapter
 from tenacity import (
@@ -26,6 +27,9 @@ from urllib3.util.retry import Retry
 from .exceptions import NetworkError, ParseError, SourceError
 from .models import Article, Source
 from .resilience import get_circuit_breaker_manager
+
+
+logger = structlog.get_logger(__name__)
 
 
 _DEFAULT_HEADERS: dict[str, str] = {
@@ -68,7 +72,7 @@ def _create_session() -> requests.Session:
     retry_strategy = Retry(
         total=3,
         backoff_factor=1,
-        status_forcelist=[429, 500, 502, 503, 504],
+        status_forcelist=[408, 429, 500, 502, 503, 504, 522, 524],
         allowed_methods=frozenset(["GET"]),
         raise_on_status=False,
     )
@@ -207,10 +211,25 @@ def _collect_single(
                         if isinstance(value, str):
                             summary = value
 
+            # Validate title and link before appending
+            title = html.unescape(_entry_text(entry, "title").strip())
+            link = _entry_text(entry, "link").strip()
+
+            # Skip articles with empty/invalid title or link
+            if not title or title == "(no title)" or not link:
+                logger.debug(
+                    "skipped_article",
+                    source=source.name,
+                    reason="empty_title_or_link",
+                    title=title or "(empty)",
+                    link=link or "(empty)",
+                )
+                continue
+
             items.append(
                 Article(
-                    title=html.unescape(_entry_text(entry, "title").strip()) or "(no title)",
-                    link=_entry_text(entry, "link").strip(),
+                    title=title,
+                    link=link,
                     summary=html.unescape(summary.strip()),
                     published=published,
                     source=source.name,
