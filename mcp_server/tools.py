@@ -8,9 +8,8 @@ from pathlib import Path
 from typing import cast
 
 import duckdb
-
-from radar.nl_query import parse_query
-from radar.search_index import SearchIndex
+from radar_core.nl_query import parse_query
+from radar_core.search_index import SearchIndex
 
 
 _ALLOWED_SQL = re.compile(r"^\s*(SELECT|WITH|EXPLAIN)\b", re.IGNORECASE)

@@ -13,7 +13,7 @@ import re
 from difflib import SequenceMatcher
 from urllib.parse import urlparse
 
-from radar.models import Article
+from radar_core.models import Article
 
 
 def normalize_title(title: str) -> str:
@@ -165,28 +165,28 @@ def detect_duplicate_articles(
 
 def validate_article(article: Article) -> tuple[bool, list[str]]:
     """
-    Validate an Article object for data quality.
+        Validate an Article object for data quality.
 
-    Args:
-        article: Article to validate
+        Args:
+            article: Article to validate
 
-    Returns:
-        Tuple of (is_valid, error_messages)
+        Returns:
+            Tuple of (is_valid, error_messages)
 
-    Examples:
-        >>> from radar.models import Article
-        >>> from datetime import datetime
-        >>> article = Article(
-        ...     title="Valid Article",
-        ...     link="https://example.com/article",
-        ...     summary="Summary",
-        ...     published=datetime.now(),
-        ...     source="Example",
-        ...     category="news"
-        ... )
-        >>> is_valid, errors = validate_article(article)
-        >>> is_valid
-        True
+        Examples:
+    >>> from radar_core.models import Article
+            >>> from datetime import datetime
+            >>> article = Article(
+            ...     title="Valid Article",
+            ...     link="https://example.com/article",
+            ...     summary="Summary",
+            ...     published=datetime.now(),
+            ...     source="Example",
+            ...     category="news"
+            ... )
+            >>> is_valid, errors = validate_article(article)
+            >>> is_valid
+            True
     """
     errors: list[str] = []
 

@@ -3,18 +3,19 @@ from __future__ import annotations
 import argparse
 from datetime import UTC
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
-from radar.analyzer import apply_entity_rules
-from radar.collector import collect_sources
+from radar_core.config_loader import load_category_config, load_settings
+from radar_core.raw_logger import RawLogger
+from radar_core.search_index import SearchIndex
+
 from radar.common.validators import validate_article
-from radar.config_loader import load_category_config, load_settings
 from radar.date_storage import apply_date_storage_policy
-from radar.models import Article
-from radar.raw_logger import RawLogger
 from radar.reporter import generate_index_html, generate_report
-from radar.search_index import SearchIndex
 from radar.storage import RadarStorage
+from radar_core.analyzer import apply_entity_rules
+from radar_core.collector import collect_sources
+from radar_core.models import Article
 
 
 def _send_notifications(
@@ -39,6 +40,7 @@ def _send_notifications(
         CompositeNotifier,
         EmailNotifier,
         NotificationPayload,
+        Notifier,
         WebhookNotifier,
     )
 
@@ -52,7 +54,7 @@ def _send_notifications(
         report_url=str(report_path),
     )
 
-    notifiers: list[object] = []
+    notifiers: list[Notifier] = []
     if email_to:
         notifiers.append(
             EmailNotifier(
@@ -145,8 +147,8 @@ def run(
 
     output_path = settings.report_dir / f"{category_cfg.category_name}_report.html"
     _ = generate_report(
-        category=category_cfg,
-        articles=recent_articles,
+        category=cast(Any, category_cfg),
+        articles=cast(Any, recent_articles),
         output_path=output_path,
         stats=stats,
         errors=errors,

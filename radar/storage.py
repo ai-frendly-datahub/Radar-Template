@@ -8,8 +8,13 @@ from typing import cast
 
 import duckdb
 
-from .exceptions import StorageError
 from .models import Article
+
+
+class StorageError(Exception):
+    """Storage 관련 에러"""
+
+    pass
 
 
 def _utc_naive(dt: datetime | None) -> datetime | None:
