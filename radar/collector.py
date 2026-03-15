@@ -154,7 +154,23 @@ def collect_sources(
     category: str = "",
     max_workers: int | None = None,
 ) -> list[Article]:
-    """Collect articles from multiple sources concurrently."""
+    """Collect articles from multiple sources concurrently.
+
+    Uses a 2-pass hybrid collection pattern:
+
+    * **Pass 1** — RSS/feed sources collected in parallel via
+      :class:`~concurrent.futures.ThreadPoolExecutor`.
+    * **Pass 2** — JavaScript/browser sources collected sequentially via
+      Playwright (see :mod:`radar.browser_collector`).
+
+    If Playwright is not installed, JS sources are silently skipped with a
+    warning log entry so that RSS-only mode keeps working.
+    """
+    # --- Source splitting ---------------------------------------------------
+    rss_sources = [s for s in sources if s.type.lower() not in ("javascript", "browser")]
+    js_sources = [s for s in sources if s.type.lower() in ("javascript", "browser")]
+
+    # --- Pass 1: RSS sources via ThreadPoolExecutor (parallel) --------------
     resolved_workers = _resolve_max_workers(max_workers)
     rate_limiter = RateLimiter()
 
@@ -179,7 +195,7 @@ def collect_sources(
 
     with ThreadPoolExecutor(max_workers=resolved_workers) as executor:
         futures: list[Future[list[Article]]] = [
-            executor.submit(fetch_source, source) for source in sources
+            executor.submit(fetch_source, source) for source in rss_sources
         ]
         for future in futures:
             try:
@@ -190,5 +206,21 @@ def collect_sources(
 
     if errors:
         logger.warning("collection_errors", errors=errors)
+
+    # --- Pass 2: JavaScript/browser sources via Playwright (sequential) -----
+    if js_sources:
+        try:
+            from .browser_collector import collect_browser_sources
+
+            js_articles, js_errors = collect_browser_sources(js_sources, category)
+            all_articles.extend(js_articles)
+            if js_errors:
+                logger.warning("browser_collection_errors", errors=js_errors)
+        except ImportError:
+            logger.warning(
+                "playwright_unavailable",
+                js_source_count=len(js_sources),
+                hint="pip install 'radar-core[browser]'",
+            )
 
     return all_articles

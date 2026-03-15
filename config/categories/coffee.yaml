@@ -12,6 +12,18 @@ sources:
     type: "rss"
     url: "https://sprudge.com/feed"
 
+  # Example JavaScript source (requires radar-core[browser] / Playwright).
+  # Uncomment and configure when adding browser-based collection.
+  # - name: "Example JS Source"
+  #   type: "javascript"
+  #   url: "https://example.com/coffee-news"
+  #   config:
+  #     wait_for: ".article-list"
+  #     timeout: 30000
+  #     content_selector: ".article-item"
+  #     title_selector: ".article-title"
+  #     link_selector: "a.article-link"
+
 entities:
   - name: "Region"
     display_name: "Region"
