@@ -10,10 +10,13 @@ from urllib.parse import urlparse
 
 import feedparser
 import requests
+import structlog
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from .models import Article, Source
+
+logger = structlog.get_logger()
 
 
 _DEFAULT_HEADERS: dict[str, str] = {
@@ -186,6 +189,6 @@ def collect_sources(
                 errors.append(("unknown", e))
 
     if errors:
-        print(f"Collection errors: {errors}")
+        logger.warning("collection_errors", errors=errors)
 
     return all_articles
