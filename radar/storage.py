@@ -8,13 +8,8 @@ from typing import cast
 
 import duckdb
 
+from .exceptions import StorageError
 from .models import Article
-
-
-class StorageError(Exception):
-    """Storage 관련 에러"""
-
-    pass
 
 
 def _utc_naive(dt: datetime | None) -> datetime | None:
@@ -184,7 +179,13 @@ class RadarStorage:
         from .date_storage import snapshot_database
 
         snapshot_root = Path(snapshot_dir) if snapshot_dir else self.db_path.parent / "daily"
-        return snapshot_database(self.db_path, snapshot_root=snapshot_root)
+        _ = self.conn.execute("CHECKPOINT")
+        self.conn.close()
+        try:
+            return snapshot_database(self.db_path, snapshot_root=snapshot_root)
+        finally:
+            self.conn = duckdb.connect(str(self.db_path))
+            self._ensure_tables()
 
     def cleanup_old_snapshots(self, snapshot_dir: str | None = None, keep_days: int = 90) -> int:
         from .date_storage import cleanup_date_directories
