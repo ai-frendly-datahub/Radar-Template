@@ -48,6 +48,13 @@ jobs:
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Compute artifact suffix
+        id: artifact_meta
+        run: |
+          suffix="${GITHUB_REF_NAME//\//-}"
+          suffix="${suffix//\\/-}"
+          echo "artifact_suffix=$suffix" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
         uses: softprops/action-gh-release@v2
@@ -66,7 +73,7 @@ jobs:
       - name: Archive DuckDB for release
         uses: actions/upload-artifact@v4
         with:
-          name: release-db-${{ github.ref_name }}
+          name: release-db-${{ steps.artifact_meta.outputs.artifact_suffix }}
           path: data/*.duckdb
           retention-days: 90
           if-no-files-found: ignore
@@ -74,7 +81,7 @@ jobs:
       - name: Archive reports for release
         uses: actions/upload-artifact@v4
         with:
-          name: release-reports-${{ github.ref_name }}
+          name: release-reports-${{ steps.artifact_meta.outputs.artifact_suffix }}
           path: reports/
           retention-days: 90
           if-no-files-found: ignore
