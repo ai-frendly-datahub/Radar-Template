@@ -2,6 +2,12 @@ name: Deploy Reports to GitHub Pages
 
 on:
   workflow_dispatch:
+    inputs:
+      deploy_to_pages:
+        description: "Publish reports to gh-pages"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -19,10 +25,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Prepare dry-run report output
+        if: ${{ github.event_name == 'workflow_dispatch' && !inputs.deploy_to_pages }}
+        run: |
+          mkdir -p reports
+          if [ ! -f reports/index.html ]; then
+            cat > reports/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>Radar Template Dry Run</title>
+          </head>
+          <body>
+            <main>
+              <h1>Radar Template Dry Run</h1>
+              <p>Generated to validate the deploy workflow without publishing.</p>
+            </main>
+          </body>
+          </html>
+          EOF
+          fi
+
       - name: Verify report output
         run: test -f reports/index.html
 
+      - name: Upload reports artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-template-reports-${{ github.run_number }}
+          path: reports/
+          retention-days: 7
+
       - name: Deploy to GitHub Pages
+        if: ${{ inputs.deploy_to_pages }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
