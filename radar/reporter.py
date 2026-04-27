@@ -38,6 +38,7 @@ def generate_report(
     output_path: Path,
     stats: dict[str, int],
     errors: list[str] | None = None,
+    extra_sections: list[dict[str, object]] | None = None,
 ) -> Path:
     """Render a simple HTML report for the collected articles."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -73,6 +74,7 @@ def generate_report(
         stats=stats,
         entity_counts=entity_counts,
         errors=errors or [],
+        extra_sections=extra_sections or [],
     )
 
     _ = output_path.write_text(rendered, encoding="utf-8")

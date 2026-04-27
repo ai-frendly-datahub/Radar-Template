@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 
@@ -62,20 +63,26 @@ class EmailSettings:
     """이메일 설정"""
 
     smtp_server: str = ""
+    smtp_host: str = ""
     smtp_port: int = 587
     username: str = ""
     password: str = ""
     from_email: str = ""
+    from_address: str = ""
     to_email: str = ""
+    to_addresses: list[str] = field(default_factory=list)
 
 
 @dataclass
 class NotificationConfig:
     """알림 설정"""
 
-    telegram: TelegramSettings = field(default_factory=TelegramSettings)
-    email: EmailSettings = field(default_factory=EmailSettings)
     enabled: bool = True
+    channels: list[str] = field(default_factory=list)
+    email: EmailSettings | None = None
+    webhook_url: str | None = None
+    telegram: TelegramSettings | None = None
+    rules: dict[str, object] = field(default_factory=dict)
 
 
 @dataclass
@@ -88,6 +95,10 @@ class RadarSettings:
     retention_days: int = 90
     notifications: NotificationConfig = field(default_factory=NotificationConfig)
     extra: dict[str, Any] = field(default_factory=dict)
+    database_path: Path = Path("data/radar_data.duckdb")
+    report_dir: Path = Path("reports")
+    raw_data_dir: Path = Path("data/raw")
+    search_db_path: Path = Path("data/search_index.db")
 
 
 __all__ = [
