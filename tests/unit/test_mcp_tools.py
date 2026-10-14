@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import duckdb
 
 from radar.search_index import SearchIndex
+from tests.reference_dates import REFERENCE_NOW
 
 
 def _init_articles_table(db_path: Path) -> None:
     conn = duckdb.connect(str(db_path))
     try:
-        _ = conn.execute(
-            """
+        _ = conn.execute("""
             CREATE TABLE articles (
                 id BIGINT PRIMARY KEY,
                 category TEXT NOT NULL,
@@ -25,8 +25,7 @@ def _init_articles_table(db_path: Path) -> None:
                 collected_at TIMESTAMP NOT NULL,
                 entities_json TEXT
             )
-            """
-        )
+            """)
     finally:
         conn.close()
 
@@ -70,7 +69,7 @@ def test_handle_search(tmp_path: Path) -> None:
     search_db_path = tmp_path / "search.db"
     _init_articles_table(db_path)
 
-    now = datetime.now(UTC)
+    now = REFERENCE_NOW
     recent_link = "https://example.com/recent"
     old_link = "https://example.com/old"
 
@@ -109,7 +108,7 @@ def test_handle_recent_updates(tmp_path: Path) -> None:
 
     db_path = tmp_path / "radar.duckdb"
     _init_articles_table(db_path)
-    now = datetime.now(UTC)
+    now = REFERENCE_NOW
 
     _seed_article(
         db_path=db_path,
@@ -160,7 +159,7 @@ def test_handle_top_trends(tmp_path: Path) -> None:
 
     db_path = tmp_path / "radar.duckdb"
     _init_articles_table(db_path)
-    now = datetime.now(UTC)
+    now = REFERENCE_NOW
 
     _seed_article(
         db_path=db_path,

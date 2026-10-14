@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 import yaml
 
@@ -114,12 +114,13 @@ def filter_sources(
     max_sources: int | None = None,
     exclude_sources: tuple[str, ...] | list[str] = (),
 ) -> list[Source]:
-    """Filter sources by exclusion name/id and a hard max count.
+    """Filter sources by enabled flag, exclusion name/id, and a hard max count.
 
     Mirrors ``radar_core.config_loader.filter_sources`` so the bundled
     template CLI keeps the same semantics even when the local ``radar``
     package is used instead of ``radar_core``.
 
+    - Disabled sources (``enabled: false``) are not active and are removed first.
     - ``exclude_sources`` matches ``Source.id`` first (if present),
       falling back to ``Source.name``; both are normalised via
       ``strip().lower()``.
@@ -127,6 +128,7 @@ def filter_sources(
       positive int. ``None`` or ``<= 0`` disables the cap.
     - Preserves order. Never mutates the input list.
     """
+    sources = [source for source in sources if source.enabled]
     excluded_tokens: set[str] = set()
     if exclude_sources:
         for token in exclude_sources:
@@ -157,13 +159,35 @@ def filter_sources(
     return filtered
 
 
+def _parse_bool(value: object, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "off"}:
+            return False
+    return default
+
+
 def _parse_source(entry: dict[str, object]) -> Source:
     if not entry:
         raise ValueError("Empty source entry in category config")
+    config: dict[str, Any] = {}
+    config_raw = entry.get("config")
+    if isinstance(config_raw, dict):
+        config_dict = cast(dict[object, object], config_raw)
+        config = {str(key): value for key, value in config_dict.items()}
+    for key in ("required_env", "required_env_vars"):
+        if key in entry and key not in config:
+            config[key] = entry[key]
     return Source(
         name=_string_value(entry, "name", "Unnamed Source"),
         type=_string_value(entry, "type", "rss"),
         url=_string_value(entry, "url", ""),
+        enabled=_parse_bool(entry.get("enabled", True), True),
+        config=config,
     )
 
 

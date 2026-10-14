@@ -4,15 +4,26 @@
 category_name: "my_category"
 display_name: "My Category Radar"
 
-# List of data sources to collect from
-# Supported types: "rss", "html" (html is a placeholder for future extension)
+# List of data sources to collect from.
+# Supported types: "rss". Collectors return an empty list on failure and never
+# invent sample items. The HTTP client sends User-Agent Radar-Template/0.1,
+# waits 45s, and keeps TLS verification on. Challenge, Cloudflare, and
+# cookie-wall titles are dropped before storage.
+#
+# A keyed source lists environment variable names only:
+#   config:
+#     required_env: EXAMPLE_API_TOKEN
+# A missing name emits one GitHub ::warning and writes
+# data/raw/<date>/<source>.skip.json. Do not put secret values in this file.
 sources:
   - name: "Example News RSS"
     type: "rss"
     url: "https://www.example.com/feed"
+    enabled: true
   # - name: "Example Website"
   #   type: "html"
   #   url: "https://www.example.com/news"
+  #   enabled: false
 
 # List of entities to extract from the collected items.
 # The analyzer will perform simple keyword matching based on these lists.
