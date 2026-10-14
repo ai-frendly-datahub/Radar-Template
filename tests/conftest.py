@@ -1,10 +1,36 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+import importlib
+from datetime import datetime, timedelta, tzinfo
 from pathlib import Path
 
 import pytest
 import structlog
+
+from tests.reference_dates import REFERENCE_NOW
+
+
+class FrozenDateTime(datetime):
+    """datetime.now() in production modules returns REFERENCE_NOW."""
+
+    @classmethod
+    def now(cls, tz: tzinfo | None = None) -> datetime:
+        if tz is None:
+            return REFERENCE_NOW.replace(tzinfo=None)
+        return REFERENCE_NOW
+
+
+@pytest.fixture(autouse=True)
+def freeze_reference_clock(monkeypatch: pytest.MonkeyPatch) -> None:
+    for module_name in (
+        "radar.storage",
+        "radar.date_storage",
+        "radar.raw_logger",
+        "radar.reporter",
+        "mcp_server.tools",
+    ):
+        module = importlib.import_module(module_name)
+        monkeypatch.setattr(module, "datetime", FrozenDateTime)
 
 
 @pytest.fixture(autouse=True)
@@ -36,7 +62,7 @@ def sample_article() -> object:
         title="AI and cloud market update",
         link="https://example.com/article-1",
         summary="Python tooling and AI adoption continue to grow.",
-        published=datetime.now(UTC) - timedelta(days=1),
+        published=REFERENCE_NOW - timedelta(days=1),
         source="Example RSS",
         category="tech",
         matched_entities={"topic": ["ai", "cloud", "python"]},

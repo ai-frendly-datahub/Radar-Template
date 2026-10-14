@@ -5,8 +5,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import cast
 
+import pytest
+
 from radar.models import Article
 from radar.raw_logger import RawLogger
+from tests.reference_dates import REFERENCE_DATE
 
 
 def _make_article(*, title: str = "Sample title", summary: str = "요약") -> Article:
@@ -27,7 +30,7 @@ def test_log_creates_yyyy_mm_dd_directory_and_jsonl_file(tmp_path: Path) -> None
 
     output_path = logger.log([article], source_name="MySource")
 
-    assert output_path.parent.name == datetime.now(UTC).date().isoformat()
+    assert output_path.parent.name == REFERENCE_DATE.isoformat()
     assert output_path.name == "MySource.jsonl"
     assert output_path.exists()
 
@@ -138,3 +141,28 @@ def test_log_without_run_id_appends_to_same_file(tmp_path: Path) -> None:
     assert output_path1 == output_path2
     lines = output_path1.read_text(encoding="utf-8").splitlines()
     assert len(lines) == 2
+
+
+def test_log_skip_stores_env_name_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RADAR_TEMPLATE_EXAMPLE_TOKEN", "super-secret-value")
+    logger = RawLogger(tmp_path)
+
+    output_path = logger.log_skip(
+        source_name="Keyed API",
+        required_env="RADAR_TEMPLATE_EXAMPLE_TOKEN",
+    )
+
+    text = output_path.read_text(encoding="utf-8")
+    payload = cast(dict[str, object], json.loads(text))
+    assert payload["status"] == "skipped_missing_env"
+    assert payload["required_env"] == "RADAR_TEMPLATE_EXAMPLE_TOKEN"
+    assert "super-secret-value" not in text
+    assert output_path.name == "Keyed API.skip.json"
+    assert output_path.parent.name == REFERENCE_DATE.isoformat()
+
+
+def test_log_skip_rejects_non_names(tmp_path: Path) -> None:
+    logger = RawLogger(tmp_path)
+    with pytest.raises(ValueError):
+        logger.log_skip(source_name="Keyed API", required_env="not a name")
+    assert list(tmp_path.rglob("*.skip.json")) == []

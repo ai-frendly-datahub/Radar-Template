@@ -29,6 +29,9 @@ class Source:
     url: str
     headers: dict[str, str] = field(default_factory=dict)
     rate_limit: float = 1.0  # 초당 요청 수
+    enabled: bool = True
+    # required_env / required_env_vars hold environment variable names, never values.
+    config: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass

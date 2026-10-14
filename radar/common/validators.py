@@ -15,6 +15,47 @@ from urllib.parse import urlparse
 
 from radar_core.models import Article
 
+_ERROR_PAGE_TITLE_RE = re.compile(
+    r"^(?:"
+    r"just a moment\.{0,3}|"
+    r"attention required!?|"
+    r"access denied|"
+    r"403 forbidden|"
+    r"404(?: not found)?|"
+    r"not found|"
+    r"enable javascript and cookies to continue"
+    r")(?:\s*\|\s*.*)?$",
+    re.IGNORECASE,
+)
+
+
+def is_challenge_or_error_page(title: str | None, body: str | None = None) -> bool:
+    """True when a fetched document is a bot wall, Cloudflare interstitial, or error page.
+
+    These responses are not articles. Callers must drop them instead of storing the page.
+    TLS verification stays on; this function does not bypass the wall.
+    """
+    title_text = (title or "").strip()
+    body_text = body or ""
+    if title_text and _ERROR_PAGE_TITLE_RE.match(title_text):
+        return True
+
+    blob = f"{title_text}\n{body_text}".lower()
+    if "just a moment" in blob and (
+        "cloudflare" in blob or "security verification" in blob or "verify you are human" in blob
+    ):
+        return True
+    if "attention required" in blob and ("cloudflare" in blob or "been blocked" in blob):
+        return True
+    if "cf-browser-verification" in blob or "challenges.cloudflare.com" in blob:
+        return True
+    # Some publishers return HTTP 200 with a CUPID/slowAES cookie wall instead of a feed.
+    if "slowaes.decrypt" in blob and "cupid" in blob:
+        return True
+    if "enable javascript and cookies to continue" in blob:
+        return True
+    return False
+
 
 def normalize_title(title: str) -> str:
     """
@@ -215,5 +256,10 @@ def validate_article(article: Article) -> tuple[bool, list[str]]:
     # Validate category
     if not article.category or not isinstance(article.category, str):
         errors.append("category is missing or not a string")
+
+    title_text = article.title if isinstance(article.title, str) else ""
+    summary_text = article.summary if isinstance(article.summary, str) else ""
+    if is_challenge_or_error_page(title_text, summary_text):
+        errors.append("content appears to be a challenge or error page")
 
     return len(errors) == 0, errors

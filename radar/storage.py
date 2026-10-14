@@ -40,8 +40,7 @@ class RadarStorage:
         self.close()
 
     def _ensure_tables(self) -> None:
-        _ = self.conn.execute(
-            """
+        _ = self.conn.execute("""
             CREATE SEQUENCE IF NOT EXISTS articles_id_seq START 1;
             CREATE TABLE IF NOT EXISTS articles (
                 id BIGINT PRIMARY KEY DEFAULT nextval('articles_id_seq'),
@@ -54,8 +53,7 @@ class RadarStorage:
                 collected_at TIMESTAMP NOT NULL,
                 entities_json TEXT
             );
-            """
-        )
+            """)
         _ = self.conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_articles_category_time ON articles (category, published, collected_at);"
         )
@@ -176,12 +174,14 @@ class RadarStorage:
         return to_delete
 
     def create_daily_snapshot(self, snapshot_dir: str | None = None) -> Path | None:
-        from .date_storage import snapshot_database
+        from .date_storage import _compact_database, snapshot_database
 
         snapshot_root = Path(snapshot_dir) if snapshot_dir else self.db_path.parent / "daily"
         _ = self.conn.execute("CHECKPOINT")
         self.conn.close()
         try:
+            # Compact before the copy so git add receives the shrunk file.
+            _compact_database(self.db_path)
             return snapshot_database(self.db_path, snapshot_root=snapshot_root)
         finally:
             self.conn = duckdb.connect(str(self.db_path))

@@ -11,18 +11,18 @@ Tests cover:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-
 import pytest
 
 from radar.common.validators import (
     detect_duplicate_articles,
+    is_challenge_or_error_page,
     is_similar_url,
     normalize_title,
     validate_article,
     validate_url_format,
 )
 from radar.models import Article
+from tests.reference_dates import REFERENCE_NOW
 
 
 class TestNormalizeTitle:
@@ -263,7 +263,7 @@ class TestValidateArticle:
             title="Valid Article",
             link="https://example.com/article",
             summary="This is a summary",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="Example Source",
             category="news",
         )
@@ -276,7 +276,7 @@ class TestValidateArticle:
             title="",
             link="https://example.com/article",
             summary="Summary",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="Source",
             category="news",
         )
@@ -289,7 +289,7 @@ class TestValidateArticle:
             title="Title",
             link="not-a-url",
             summary="Summary",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="Source",
             category="news",
         )
@@ -302,7 +302,7 @@ class TestValidateArticle:
             title="Title",
             link="https://example.com/article",
             summary="",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="Source",
             category="news",
         )
@@ -315,7 +315,7 @@ class TestValidateArticle:
             title="Title",
             link="https://example.com/article",
             summary="Summary",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="",
             category="news",
         )
@@ -328,7 +328,7 @@ class TestValidateArticle:
             title="Title",
             link="https://example.com/article",
             summary="Summary",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="Source",
             category="",
         )
@@ -341,7 +341,7 @@ class TestValidateArticle:
             title="",
             link="invalid",
             summary="",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="",
             category="",
         )
@@ -367,7 +367,7 @@ class TestValidateArticle:
             title="Title",
             link="https://example.com/article",
             summary="Summary",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="Source",
             category="news",
             matched_entities={"entity1": ["keyword1", "keyword2"]},
@@ -405,10 +405,59 @@ class TestValidatorsIntegration:
             title="Valid Article Title",
             link="https://example.com/news/article-123",
             summary="This is a comprehensive summary of the article content.",
-            published=datetime.now(UTC),
+            published=REFERENCE_NOW,
             source="News Source",
             category="technology",
         )
         is_valid, errors = validate_article(article)
         assert is_valid is True
         assert len(errors) == 0
+
+
+def test_validate_article_drops_challenge_cloudflare_and_cookie_wall() -> None:
+    challenge = Article(
+        title="Just a moment...",
+        link="https://example.com/cdn-cgi/challenge",
+        summary="Checking your browser before accessing. Cloudflare security verification.",
+        published=REFERENCE_NOW,
+        source="Example",
+        category="template",
+    )
+    is_valid, errors = validate_article(challenge)
+    assert is_valid is False
+    assert any("challenge" in error for error in errors)
+
+    attention = Article(
+        title="Attention Required! | Cloudflare",
+        link="https://example.com/blocked",
+        summary="Sorry, you have been blocked",
+        published=REFERENCE_NOW,
+        source="Example",
+        category="template",
+    )
+    is_valid, errors = validate_article(attention)
+    assert is_valid is False
+
+    cookie = Article(
+        title="Enable JavaScript and cookies to continue",
+        link="https://example.com/cookie-wall",
+        summary="slowAES.decrypt CUPID cookie wall",
+        published=REFERENCE_NOW,
+        source="Example",
+        category="template",
+    )
+    assert is_challenge_or_error_page(cookie.title, cookie.summary) is True
+    is_valid, _errors = validate_article(cookie)
+    assert is_valid is False
+
+    real = Article(
+        title="404 wines worth cellaring this year",
+        link="https://example.com/wines",
+        summary="A buyer guide, not an error page.",
+        published=REFERENCE_NOW,
+        source="Example",
+        category="template",
+    )
+    assert is_challenge_or_error_page(real.title, real.summary) is False
+    is_valid, _errors = validate_article(real)
+    assert is_valid is True
