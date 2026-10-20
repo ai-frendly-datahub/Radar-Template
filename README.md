@@ -43,13 +43,15 @@ Standard 레이더의 기본 구조와 패턴을 정의하는 캐노니컬 템�
 2. **스냅샷 전에 압축.** `apply_date_storage_policy()`와 `RadarStorage.create_daily_snapshot()`은 일일 복사와 git add 전에 `radar_core.db_compact.compact_duckdb_file(database_path)`를 호출합니다. 압축이 실패해도 기존 파일을 스냅샷하고, 실행 로그에 바이트 수와 삭제된 행 수를 남깁니다. `RADAR_DUCKDB_MAX_BYTES`와 `RADAR_DUCKDB_COMPACT=0`은 radar-core 안에서 읽습니다. 기본 예산은 90MiB입니다.
 3. **피드 클라이언트.** User-Agent는 `Radar-Template/0.1` (저장소 이름/0.1)으로 고정합니다. 브라우저 위장이 아닙니다. RSS 타임아웃 기본값은 45초입니다. TLS 검증은 항상 켭니다. `verify=False`를 두지 않습니다. Cloudflare, "Just a moment", 쿠키 월, 403/404 페이지 제목은 저장하기 전에 버립니다.
 4. **없는 시크릿.** 소스마다 GitHub `::warning`을 한 번 출력합니다. `data/raw/<날짜>/<소스>.skip.json`에는 환경 변수 이름만 기록합니다. 값, 토큰, URL 쿼리의 비밀은 쓰지 않습니다. 수집기는 실패하면 빈 리스트를 반환하며 샘플이나 가짜 기사를 만들지 않습니다.
-5. **실패해야 하는 실행.** 활성 소스가 있는데 수집 건수가 0이면 프로세스가 종료 코드 1로 끝납니다. 출력이 0바이트이거나 DuckDB가 100MiB 이상이면 워크플로가 실패합니다. 데이터 auto-commit/push에는 `continue-on-error`를 붙이지 않습니다.
+5. **빈 수집은 설정으로 고른다.** `config/config.yaml` 기본값은 `on_empty_collection: warn`, `skip_commit_on_empty: true`이다. 이 저장소는 운영 Radar가 아니라 템플릿이라, 활성 소스가 있어도 기사가 0건이면 실패 대신 `::warning`을 남기고 종료 코드 0으로 끝낸다. 0건은 새 데이터가 아니므로 크롤러 워크플로는 데이터 auto-commit과 Pages 배포를 건너뛴다. 복사한 Radar가 빈 수집을 장애로 봐야 하면 `on_empty_collection: fail`로 바꾼다. 그 값은 종료 코드 1이라 커밋 단계에 도달하지 않는다. 커밋을 하는 실행에서 출력이 0바이트이거나 DuckDB가 100MiB 이상이면 워크플로가 실패한다. 데이터 auto-commit/push에는 `continue-on-error`를 붙이지 않는다.
 6. **Pages는 푸시 성공 후에만.** `gh-pages` 배포 단계는 auto-commit 단계의 `outcome == success`일 때만 실행됩니다. 푸시가 거절되면 리포트 브랜치를 갱신하지 않습니다.
 7. **테스트.** 날짜 단정은 `tests/reference_dates.py`의 기준 시각(2026-03-13 12:00 UTC)과 `tests/fixtures/`를 사용합니다. 커버리지 설정은 `relative_files = true`입니다.
 
 시크릿 값은 코드, YAML, 로그, skip 파일에 넣지 않습니다. 이름만 적습니다.
 
-다른 Radar에 옮길 때는 위 1–7과 워크플로 가드(0바이트 출력 실패, DuckDB 100MiB 실패, auto-commit의 `continue-on-error` 제거, Pages는 푸시 성공 후)를 맞춥니다. 특정 사이트의 피드 URL이나 비활성화 사유는 그 저장소의 검증 결과이므로 템플릿에 넣지 않습니다.
+예제 카테고리 `config/categories/template.yaml`의 피드는 `https://www.nasa.gov/feed/`이다. `https://www.nasa.gov/robots.txt`가 `User-agent: *`에 `Allow: /`이고, 2026-10-20에 HTTP 200 `application/rss+xml`로 응답했다. `https://www.example.com/feed`는 404라서 빼었다. 샘플 기사나 가짜 데이터는 넣지 않는다. 복사한 Radar는 이 피드를 자기 소스로 바꾼다.
+
+다른 Radar에 옮길 때는 위 1–7과 워크플로 가드(커밋 대상의 0바이트 출력 실패, DuckDB 100MiB 실패, auto-commit의 `continue-on-error` 제거, Pages는 푸시 성공 후, 0건이면 설정에 따라 경고 후 커밋 생략)를 맞춥니다. 특정 사이트를 끈 이유는 그 저장소의 검증 결과이므로 템플릿에 넣지 않습니다.
 
 ## GitHub Actions & GitHub Pages
 

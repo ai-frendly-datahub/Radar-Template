@@ -11,3 +11,17 @@ raw_data_dir: "data/raw"
 
 # Path to the SQLite FTS5 sidecar database file
 search_db_path: "data/search_index.db"
+
+# 활성 소스가 있는데 이번 실행의 기사가 0건일 때.
+# warn (기본값): GitHub ::warning 만 남기고 종료 코드 0.
+# fail: ::error 후 종료 코드 1. 복사한 운영 Radar가 빈 수집을 장애로 볼 때 사용.
+#
+# 기본값이 warn인 이유: 이 저장소는 운영 Radar가 아니라 템플릿이다.
+# 예제 피드가 잠시 비거나, 복사 직후 소스를 아직 바꾸지 않은 상태까지
+# 매일 워크플로를 실패로 만들면 템플릿 자체의 빨간 실행이 쌓인다.
+on_empty_collection: warn
+
+# true (기본값): 0건이면 크롤러 워크플로가 데이터 auto-commit과 Pages 배포를 건너뛴다.
+# 0건은 새 데이터가 아니므로 빈 스냅샷을 커밋하지 않는다.
+# false로 두면 warn 정책에서 리포트 커밋을 허용한다. fail이면 커밋 단계에 도달하지 않는다.
+skip_commit_on_empty: true

@@ -6,6 +6,7 @@ from typing import Any, cast
 
 import yaml
 
+from .exceptions import ConfigError
 from .models import (
     CategoryConfig,
     EmailSettings,
@@ -78,6 +79,8 @@ def load_settings(config_path: Path | None = None) -> RadarSettings:
         report_dir=report_dir,
         raw_data_dir=raw_data_dir,
         search_db_path=search_db_path,
+        on_empty_collection=_on_empty_collection(raw),
+        skip_commit_on_empty=_required_bool(raw, "skip_commit_on_empty", True),
     )
 
 
@@ -157,6 +160,33 @@ def filter_sources(
         filtered = filtered[:max_sources]
 
     return filtered
+
+
+def _on_empty_collection(raw: dict[str, object]) -> str:
+    """Return ``warn`` or ``fail``. Missing key uses the template default ``warn``."""
+    if "on_empty_collection" not in raw:
+        return "warn"
+    value = raw.get("on_empty_collection")
+    if isinstance(value, str):
+        policy = value.strip().lower()
+        if policy in {"warn", "fail"}:
+            return policy
+    raise ConfigError("on_empty_collection must be 'warn' or 'fail'")
+
+
+def _required_bool(raw: dict[str, object], key: str, default: bool) -> bool:
+    if key not in raw:
+        return default
+    value = raw.get(key)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "off"}:
+            return False
+    raise ConfigError(f"{key} must be a boolean")
 
 
 def _parse_bool(value: object, default: bool) -> bool:

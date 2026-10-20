@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from datetime import UTC
 from pathlib import Path
@@ -11,7 +12,7 @@ from radar.collector import collect_sources
 from radar.common.validators import validate_article
 from radar.config_loader import filter_sources, load_category_config, load_settings
 from radar.date_storage import apply_date_storage_policy
-from radar.exceptions import EmptyCollectionError
+from radar.exceptions import ConfigError, EmptyCollectionError
 from radar.models import Article
 from radar.raw_logger import RawLogger
 from radar.reporter import generate_index_html, generate_report
@@ -184,9 +185,15 @@ def run(
     )
     if errors:
         print(f"[Radar] {len(errors)} source(s) had issues. See report for details.")
+    print(
+        "[Radar] Collected "
+        f"{len(collected)} article(s) from {len(effective_sources)} enabled source(s)."
+    )
     ensure_collection_not_empty(
         collected_count=len(collected),
         enabled_source_count=len(effective_sources),
+        on_empty_collection=settings.on_empty_collection,
+        skip_commit_on_empty=settings.skip_commit_on_empty,
     )
 
     _send_notifications(
@@ -201,17 +208,56 @@ def run(
     return output_path
 
 
-def ensure_collection_not_empty(*, collected_count: int, enabled_source_count: int) -> None:
-    """Fail the run when enabled sources produced nothing.
+def _publish_github_output(*, collected_count: int, skip_commit: bool) -> None:
+    """Record collection outcome for the crawler workflow. No secrets are written."""
+    output_path = os.environ.get("GITHUB_OUTPUT")
+    if not output_path:
+        return
+    with open(output_path, "a", encoding="utf-8") as handle:
+        handle.write(f"collected={collected_count}\n")
+        handle.write(f"skip_commit={'true' if skip_commit else 'false'}\n")
 
+
+def ensure_collection_not_empty(
+    *,
+    collected_count: int,
+    enabled_source_count: int,
+    on_empty_collection: str = "warn",
+    skip_commit_on_empty: bool = True,
+) -> bool:
+    """Apply the empty-collection policy.
+
+    Returns whether the workflow should skip the data commit. ``fail`` raises
+    ``EmptyCollectionError``. ``warn`` prints a GitHub warning and exits cleanly.
     A dated snapshot of an old database is not evidence that this run collected data.
     """
-    if enabled_source_count > 0 and collected_count <= 0:
+    empty = enabled_source_count > 0 and collected_count <= 0
+    if not empty:
+        _publish_github_output(collected_count=collected_count, skip_commit=False)
+        return False
+
+    if on_empty_collection == "fail":
         print(
             "::error title=Radar-Template empty collection::Collection produced no articles",
             flush=True,
         )
+        _publish_github_output(collected_count=collected_count, skip_commit=True)
         raise EmptyCollectionError("Collection produced no articles from enabled sources")
+
+    if on_empty_collection != "warn":
+        raise ConfigError("on_empty_collection must be 'warn' or 'fail'")
+
+    skip_commit = skip_commit_on_empty
+    print(
+        "::warning title=Radar-Template empty collection::Collection produced no articles",
+        flush=True,
+    )
+    print(
+        "[Radar] Empty collection is a warning. " f"skip_commit={str(skip_commit).lower()}",
+        flush=True,
+    )
+    _publish_github_output(collected_count=collected_count, skip_commit=skip_commit)
+    return skip_commit
 
 
 def parse_args() -> argparse.Namespace:

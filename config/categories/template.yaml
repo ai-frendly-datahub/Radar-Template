@@ -16,9 +16,12 @@ display_name: "My Category Radar"
 # A missing name emits one GitHub ::warning and writes
 # data/raw/<date>/<source>.skip.json. Do not put secret values in this file.
 sources:
-  - name: "Example News RSS"
+  # Live public feed so the template pipeline can be exercised.
+  # https://www.nasa.gov/robots.txt allows User-agent: * with Allow: /.
+  # Checked 2026-10-20: HTTP 200, application/rss+xml. No sample articles.
+  - name: "NASA News RSS"
     type: "rss"
-    url: "https://www.example.com/feed"
+    url: "https://www.nasa.gov/feed/"
     enabled: true
   # - name: "Example Website"
   #   type: "html"
