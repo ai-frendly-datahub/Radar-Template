@@ -102,6 +102,10 @@ class RadarSettings:
     report_dir: Path = Path("reports")
     raw_data_dir: Path = Path("data/raw")
     search_db_path: Path = Path("data/search_index.db")
+    # Template default: an empty run warns and asks the workflow to skip commit.
+    # Copied production radars set on_empty_collection to "fail".
+    on_empty_collection: str = "warn"
+    skip_commit_on_empty: bool = True
 
 
 __all__ = [

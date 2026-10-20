@@ -14,7 +14,7 @@ class CollectionError(RadarError):
 
 
 class EmptyCollectionError(CollectionError):
-    """Enabled sources produced no articles. An empty run is not success."""
+    """Enabled sources produced no articles and ``on_empty_collection`` is ``fail``."""
 
 
 class SourceError(CollectionError):

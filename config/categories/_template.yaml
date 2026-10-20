@@ -7,9 +7,11 @@ display_name: "My Category Radar"
 # List of data sources to collect from
 # Supported types: "rss", "html" (html is a placeholder for future extension)
 sources:
-  - name: "Example News RSS"
+  # Same live public feed as template.yaml. Replace it when copying this file.
+  # https://www.nasa.gov/robots.txt allows User-agent: * with Allow: /.
+  - name: "NASA News RSS"
     type: "rss"
-    url: "https://www.example.com/feed"
+    url: "https://www.nasa.gov/feed/"
   # - name: "Example Website"
   #   type: "html"
   #   url: "https://www.example.com/news"

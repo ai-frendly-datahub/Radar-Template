@@ -49,6 +49,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Radar
+        id: radar
         run: |
           python main.py --category "${{ env.RADAR_CATEGORY }}" --recent-days 7 --keep-days 90 --keep-raw-days 180 --keep-report-days 90 --timeout 45 --snapshot-db --generate-report
 
@@ -72,6 +73,9 @@ jobs:
           retention-days: 30
 
       - name: Verify dated data artifact
+        # Empty template runs warn and set skip_commit=true. Do not fail the job
+        # or commit a snapshot that contains no new articles.
+        if: success() && steps.radar.outputs.skip_commit != 'true'
         run: |
           set -euo pipefail
           dates="$(date -u +%F) $(TZ=Asia/Seoul date +%F)"
@@ -103,6 +107,7 @@ jobs:
 
       - name: Auto-commit data updates
         id: auto-commit
+        if: success() && steps.radar.outputs.skip_commit != 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update radar data [skip ci]"
@@ -150,6 +155,8 @@ jobs:
           echo "- **Run**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Collected**: ${{ steps.radar.outputs.collected }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Skip commit**: ${{ steps.radar.outputs.skip_commit }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -f "reports/index.html" ]; then
             echo "✅ Report generated successfully" >> $GITHUB_STEP_SUMMARY
