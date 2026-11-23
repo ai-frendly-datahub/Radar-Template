@@ -1,0 +1,1406 @@
+<!doctype html>
+<html lang="en" data-visual-system="radar-unified-v2" data-visual-surface="report" data-visual-page="daily-report">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>My Category Radar - Radar Report</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+  <style>
+    :root {
+      --vs-bg-0: #0b0b0f;
+      --vs-surface-0: rgba(28, 26, 34, 0.86);
+      --vs-surface-1: rgba(36, 33, 43, 0.94);
+      --vs-text: #f4f4f7;
+      --vs-text-muted: rgba(244, 244, 247, 0.76);
+      --vs-text-faint: rgba(244, 244, 247, 0.58);
+      --vs-line: rgba(244, 244, 247, 0.14);
+      --vs-shadow: 0 14px 42px rgba(0,0,0,0.34);
+      --vs-shadow-hover: 0 18px 52px rgba(0,0,0,0.42);
+      --vs-brand: #33d6c5;
+      --vs-brand-strong: #19b591;
+      --vs-accent: #f6c84c;
+      --vs-danger: #ff5b6e;
+      --vs-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "Courier New", monospace;
+      --vs-font-sans: "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg-page: var(--vs-bg-0);
+      --bg-card: var(--vs-surface-0);
+      --bg-card-strong: var(--vs-surface-1);
+      --text-primary: var(--vs-text);
+      --text-secondary: var(--vs-text-muted);
+      --text-muted: var(--vs-text-faint);
+      --border-subtle: var(--vs-line);
+      --shadow-card: var(--vs-shadow);
+      --shadow-card-hover: var(--vs-shadow-hover);
+      --accent-teal: var(--vs-brand);
+      --accent-blue: #19b591;
+      --accent-yellow: var(--vs-accent);
+      --accent-indigo: #78a2ff;
+      --accent-coral: var(--vs-danger);
+      --accent-green: #5fde84;
+      --accent-orange: #ff9a4a;
+      --error-bg: rgba(255, 91, 110, 0.13);
+      --error-border: rgba(255, 91, 110, 0.28);
+      --error-text: #ff9ca8;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-full: 9999px;
+      --font-mono: var(--vs-font-mono);
+      --font-sans: var(--vs-font-sans);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: var(--font-sans);
+      margin: 0; padding: 0;
+      background: linear-gradient(180deg, var(--bg-page), #121116 58%, #08080b);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+    /* Header */
+    .header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 28px; padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .header__info { flex: 1; }
+    .header__title {
+      font-size: 28px; font-weight: 700; color: var(--text-primary);
+      margin: 0 0 4px 0; letter-spacing: -0.02em;
+    }
+    .header__timestamp { font-size: 13px; color: var(--text-muted); }
+    .export-actions { display: flex; gap: 8px; align-items: flex-start; }
+
+    /* Summary Cards */
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+    .quality-panel {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 24px;
+      border-left: 4px solid var(--accent-blue);
+    }
+    .quality-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 16px;
+    }
+    .quality-metric {
+      border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+      padding: 10px 12px; background: rgba(244,244,247,0.04);
+    }
+    .quality-metric__label {
+      display: block; font-size: 11px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .quality-metric__value {
+      display: block; font-size: 20px; font-weight: 700; color: var(--text-primary);
+      margin-top: 2px;
+    }
+    .quality-list { margin: 10px 0 0 18px; padding: 0; color: var(--text-secondary); font-size: 13px; }
+    .quality-list li { margin: 5px 0; }
+    .extra-section {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 24px;
+    }
+    .extra-section__header { margin-bottom: 12px; }
+    .extra-section__title { margin: 0; font-size: 18px; font-weight: 600; }
+    .extra-section__subtitle { margin: 6px 0 0; color: var(--text-muted); font-size: 13px; }
+    .extra-section__badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
+    .extra-section__body { display: flex; flex-direction: column; gap: 14px; }
+    .extra-section__body p { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+    .extra-section__body .metric-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+    }
+    .extra-section__body .metric-card {
+      border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+      padding: 10px 12px; background: rgba(244,244,247,0.04);
+    }
+    .extra-section__body .metric-card span { display: block; font-size: 11px; color: var(--text-muted); }
+    .extra-section__body .metric-card strong { display: block; margin-top: 4px; font-size: 20px; }
+    .extra-section__body .inline-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .extra-section__body .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .extra-section__body .data-table th,
+    .extra-section__body .data-table td { border-top: 1px solid var(--border-subtle); padding: 8px; text-align: left; vertical-align: top; }
+    .extra-section__body ul { margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 13px; line-height: 1.55; }
+    .extra-section__body code { font-family: var(--font-mono); font-size: 12px; }
+    .stat-card {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card);
+      border-left: 4px solid var(--accent-teal);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-1px); }
+    .stat-card--blue { border-left-color: var(--accent-blue); }
+    .stat-card--yellow { border-left-color: var(--accent-yellow); }
+    .stat-card--indigo { border-left-color: var(--accent-indigo); }
+    .stat-card__label {
+      font-size: 12px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+    }
+    .stat-card__value { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+
+    /* Errors */
+    .error-alert {
+      background: var(--error-bg); border: 1px solid var(--error-border);
+      border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;
+    }
+    .error-alert__title { font-weight: 600; color: var(--error-text); margin: 0 0 8px 0; }
+    .error-alert__item { font-size: 13px; color: var(--error-text); margin: 4px 0; }
+
+    /* Filter Bar */
+    .filter-bar {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 16px; margin-bottom: 24px;
+      box-shadow: var(--shadow-card); min-height: 20px;
+    }
+
+
+    /* Filter Controls */
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .filter-bar select, .filter-bar input {
+      font-family: inherit; font-size: 13px; padding: 8px 12px;
+      border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+      background: var(--bg-card); color: var(--text-primary);
+      outline: none; min-width: 140px;
+    }
+    .filter-bar select:focus, .filter-bar input:focus {
+      border-color: var(--accent-teal); box-shadow: 0 0 0 2px rgba(51,214,197,0.2);
+    }
+    .filter-bar input[type="date"] { min-width: 130px; }
+    .filter-bar input[type="search"] { min-width: 200px; }
+    .filter-status {
+      font-size: 12px; color: var(--text-muted); width: 100%; margin-top: 4px;
+    }
+    .filter-clear {
+      font-size: 12px; color: var(--accent-blue); cursor: pointer;
+      background: none; border: none; font-family: inherit; padding: 4px 8px;
+    }
+    .filter-clear:hover { text-decoration: underline; }
+    /* Export Button */
+    .btn-export {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--radius-sm);
+      background: var(--accent-teal); color: #06110f;
+      font-size: 13px; font-weight: 500; border: none;
+      cursor: pointer; font-family: inherit;
+      transition: background 0.2s;
+    }
+    .btn-export:hover { background: #2bc4b4; }
+    .btn-export:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Section Headers */
+    .section-title {
+      font-size: 18px; font-weight: 600; color: var(--text-primary);
+      margin: 32px 0 16px 0; letter-spacing: -0.01em;
+    }
+
+    /* Chart Cards */
+    .charts-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 16px; margin-bottom: 24px;
+    }
+    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+    .chart-card {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card); overflow: hidden;
+    }
+    .chart-card__header {
+      padding: 14px 20px; border-bottom: 1px solid var(--border-subtle);
+    }
+    .chart-card__title {
+      font-size: 13px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.04em; margin: 0;
+    }
+    .chart-card__body { padding: 16px; height: 280px; position: relative; }
+
+    /* Entity Pills */
+    .entity-section {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 24px;
+    }
+    .pill {
+      display: inline-block; padding: 4px 12px; border-radius: var(--radius-full);
+      background: rgba(51,214,197,0.12); color: var(--accent-teal);
+      font-size: 13px; font-weight: 500; margin: 3px 4px 3px 0;
+    }
+
+    /* Article Cards */
+    .articles-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+    }
+    .article-card {
+      background: var(--bg-card); border-radius: var(--radius-md);
+      padding: 20px; box-shadow: var(--shadow-card);
+      transition: box-shadow 0.2s;
+    }
+    .article-card:hover { box-shadow: var(--shadow-card-hover); }
+    .article-card__title {
+      font-size: 15px; font-weight: 600; line-height: 1.4; margin: 0 0 8px 0;
+    }
+    .article-card__title a { color: var(--text-primary); text-decoration: none; }
+    .article-card__title a:hover { color: var(--accent-blue); text-decoration: underline; }
+    .article-card__meta {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 10px; flex-wrap: wrap;
+    }
+    .source-badge {
+      display: inline-flex; padding: 2px 10px; border-radius: var(--radius-full);
+      background: rgba(25,181,145,0.12); color: var(--accent-teal);
+      font-size: 11px; font-weight: 500;
+    }
+    .article-card__date { font-size: 12px; color: var(--text-muted); }
+    .article-card__summary {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 10px 0;
+    }
+    .chip {
+      display: inline-block; padding: 3px 10px; border-radius: var(--radius-sm);
+      font-size: 11px; font-weight: 500; margin: 2px 4px 2px 0;
+      background: rgba(120,162,255,0.15); color: #b9c9ff;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      background: var(--bg-card); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+    }
+    .empty-state__icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-state__title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .empty-state__message { font-size: 13px; color: var(--text-muted); }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px; padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center; font-size: 13px; color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header__info">
+        <h1 class="header__title">My Category Radar</h1>
+        <div class="header__timestamp">Generated 2026-11-23T04:31:28.351736+00:00 UTC</div>
+      </div>
+      <div id="export-actions" class="export-actions"><button class="btn-export" id="btn-csv" onclick="exportCSV()">Export CSV</button></div>
+    </header>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="stat-card">
+        <div class="stat-card__label">Sources</div>
+        <div class="stat-card__value">1</div>
+      </div>
+      <div class="stat-card stat-card--blue">
+        <div class="stat-card__label">Collected</div>
+        <div class="stat-card__value">10</div>
+      </div>
+      <div class="stat-card stat-card--yellow">
+        <div class="stat-card__label">Entity Hits</div>
+        <div class="stat-card__value">0</div>
+      </div>
+      <div class="stat-card stat-card--indigo">
+        <div class="stat-card__label">Window (days)</div>
+        <div class="stat-card__value">7</div>
+      </div>
+    </div>
+
+    <!-- Errors -->
+    
+
+    <!-- Filter Bar (placeholder for Task 6) -->
+    <div id="filter-bar" class="filter-bar">
+      <select id="filter-entity" aria-label="Filter by entity"><option value="">All Entities</option></select>
+      <select id="filter-source" aria-label="Filter by source"><option value="">All Sources</option></select>
+      <input type="date" id="filter-date-from" aria-label="From date" title="From date">
+      <input type="date" id="filter-date-to" aria-label="To date" title="To date">
+      <input type="search" id="filter-search" placeholder="Search titles & summaries..." aria-label="Search articles">
+      <button class="filter-clear" id="filter-clear" onclick="clearFilters()" style="display:none">Clear all</button>
+      <div class="filter-status" id="filter-status"></div>
+    </div>
+
+    <!-- Charts -->
+    <h2 class="section-title">Analytics</h2>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Entity Distribution</h3></div>
+        <div class="chart-card__body"><canvas id="chartEntities"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Article Timeline</h3></div>
+        <div class="chart-card__body"><canvas id="chartTimeline"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Source Distribution</h3></div>
+        <div class="chart-card__body"><canvas id="chartSources"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Data Freshness</h3></div>
+        <div class="chart-card__body"><canvas id="chartFreshness"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Entity Extraction Rate</h3></div>
+        <div class="chart-card__body"><canvas id="chartEntityRate"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card__header"><h3 class="chart-card__title">Source Health</h3></div>
+        <div class="chart-card__body"><canvas id="chartSourceHealth"></canvas></div>
+      </div>
+    </div>
+
+    
+
+    
+
+    <!-- Entity Hits -->
+    
+
+    <!-- Articles -->
+    <h2 class="section-title" id="articles-heading">Recent Articles</h2>
+    <div class="articles-grid" id="articles-list">
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/centers-and-facilities/johnson/65-years-of-human-spaceflight-at-nasa-johnson/" target="_blank" rel="noopener noreferrer">65 Years of Human Spaceflight at NASA Johnson</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-22</span>
+          
+        </div>
+        <div class="article-card__summary">For 65 years, NASA’s Johnson Space Center in Houston has helped shape human spaceflight, from the Gemini missions that demonstrated rendezvous and docking techniques needed for Apollo to the research conducted aboard the…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/image-article/apod-2026-november-22-swirls-and-colors-on-jupiter-from-juno/" target="_blank" rel="noopener noreferrer">APOD: 2026 November 22 – Swirls and Colors on Jupiter from Juno</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-22</span>
+          
+        </div>
+        <div class="article-card__summary">APODScienceAPODAPOD: 2026 November 22 –…Today’s APODArchiveSubmissionsIndexSearchCalendarRSSEducationAboutDiscuss  APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fa…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/image-article/apod-2026-november-21-voyagers-neptune/" target="_blank" rel="noopener noreferrer">APOD: 2026 November 21 – Voyager’s Neptune</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-21</span>
+          
+        </div>
+        <div class="article-card__summary">APODScienceAPODAPOD: 2026 November 21 –…Today’s APODArchiveSubmissionsIndexSearchCalendarRSSEducationAboutDiscuss  APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fa…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/photojournal/curiosity-spots-drifting-twilight-clouds/" target="_blank" rel="noopener noreferrer">Curiosity Spots Drifting Twilight Clouds</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-20</span>
+          
+        </div>
+        <div class="article-card__summary">Description NASA’s Curiosity Mars rover captured these drifting clouds on Oct. 31, 2026, the 5,061st Martian day, or sol, of the mission. The rover uses its navigation cameras to capture post-sunset clouds, called twilig…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/directorates/rtmd/new-nasa-seed-funding-primes-small-businesses-for-innovation/" target="_blank" rel="noopener noreferrer">New NASA Seed Funding Primes Small Businesses for Innovation</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-20</span>
+          
+        </div>
+        <div class="article-card__summary">Awards to small businesses around the country are addressing some of NASA’s most crucial technology needs for exploration of the Moon and Mars while fueling the U.S. space economy. NASA’s Small Business Innovation Resear…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/centers-and-facilities/stennis/honor-awards-ceremony-at-stennis/" target="_blank" rel="noopener noreferrer">NASA Honor Awards Ceremony Recognizes Employees at Stennis Space Center</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-20</span>
+          
+        </div>
+        <div class="article-card__summary">Employees contributing to NASA’s mission at the agency’s Stennis Space Center near Bay St. Louis, Mississippi, were recognized during the center’s Honor Awards ceremony on Nov. 18.   Presenting the awards were Christine …</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/image-article/nasas-curiosity-mars-rover-collects-samples/" target="_blank" rel="noopener noreferrer">NASA’s Curiosity Mars Rover Collects Samples</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-20</span>
+          
+        </div>
+        <div class="article-card__summary">This Nov. 16 collage shows 49 drill holes captured by NASA’s Curiosity Mars rover as of November 2026. Each hole represents a sample collected from rocks on the Martian surface; Curiosity’s drill, located on the end of i…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/image-article/apod-2026-november-20-v-g-r/" target="_blank" rel="noopener noreferrer">APOD: 2026 November 20 – V-G-R</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-20</span>
+          
+        </div>
+        <div class="article-card__summary">APODScienceAPODAPOD: 2026 November…Today’s APODArchiveSubmissionsIndexSearchCalendarRSSEducationAboutDiscuss  APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascina…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/earth/earth-observatory/the-stormy-southwest-pacific/" target="_blank" rel="noopener noreferrer">The Stormy Southwest Pacific</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-20</span>
+          
+        </div>
+        <div class="article-card__summary">Tropical Cyclone Xavier launched the basin’s storm season with a bang.</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/directorates/stmd/prizes-challenges-crowdsourcing-program/center-of-excellence-for-collaborative-innovation-coeci/challenge-public-input-on-life-and-the-world-in-2075/" target="_blank" rel="noopener noreferrer">Challenge: Public Input on Life and the World in 2075</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-19</span>
+          
+        </div>
+        <div class="article-card__summary">NASA’s Transformational Tools and Technologies (TTT) is gathering public perspectives on life today and how the world may change by 2075. This challenge asks for conceptual ideas about life in 2075 across four challenge …</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/open-science/fermi-data-pulsar-discovery/" target="_blank" rel="noopener noreferrer">NASA Science Data Powers New Method to Discover Hard-to-Find Pulsars</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-19</span>
+          
+        </div>
+        <div class="article-card__summary">Open data from NASA’s Fermi mission helped an international team of scientists develop a method for finding pulsars about a million times faster than before.</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/image-article/lake-pelku/" target="_blank" rel="noopener noreferrer">Lake Pelku</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-19</span>
+          
+        </div>
+        <div class="article-card__summary">An astronaut on the International Space Station captured this photograph of Lake Pelku (near center) as the station orbited above Asia. The International Space Station serves as a unique platform for observing Earth with…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/image-article/latest-rs-25-engine-test-in-support-of-future-artemis-missions/" target="_blank" rel="noopener noreferrer">NASA Conducts Latest RS-25 Engine Test in Support of Future Artemis Missions</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-19</span>
+          
+        </div>
+        <div class="article-card__summary">NASA tested RS-25 engine No. 10001 on Nov. 18 on the Fred Haise Test Stand at NASA’s Stennis Space Center near Bay St. Louis, Mississippi. Test teams fired the developmental engine for the planned duration of three minut…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/" target="_blank" rel="noopener noreferrer">NASA’s Voyager 1 Makes History Reaching One Light-Day From Earth</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-19</span>
+          
+        </div>
+        <div class="article-card__summary">NASA’s Voyager 1 probe, humanity’s farthest-flying spacecraft, has reached one light-day from Earth, after more than 49 years of constant travel. A light-day is the distance light travels in 24 hours, equaling about 16.1…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/image-article/apod-2026-november-19-the-horsehead-and-flame-nebulas/" target="_blank" rel="noopener noreferrer">APOD: 2026 November 19 – The Horsehead and Flame Nebulas</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-19</span>
+          
+        </div>
+        <div class="article-card__summary">APODScienceAPODAPOD: 2026 November 19 – The…Today’s APODArchiveSubmissionsIndexSearchCalendarRSSEducationAboutDiscuss  APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of ou…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/earth/earth-observatory/el-nino-rains-paint-the-atacama/" target="_blank" rel="noopener noreferrer">El Niño Rains Paint the Atacama</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-19</span>
+          
+        </div>
+        <div class="article-card__summary">Winter precipitation helped wake dormant seeds in northern Chile, carpeting the desert with what may be the region’s most extensive flowering of the satellite era.</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/news-release/nasa-sets-coverage-for-northrop-grumman-crs-25-launch-prelaunch/" target="_blank" rel="noopener noreferrer">NASA Sets Coverage for Northrop Grumman CRS-25 Launch, Prelaunch</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">NASA, Northrop Grumman, and SpaceX are targeting no earlier than 10:47 a.m. EST, Sunday, Nov. 29, for the next launch delivering science investigations, supplies, and equipment to the International Space Station. The age…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/centers-and-facilities/michoud/maf-eap/maf-eap-holidays-how-to-manage-the-bah-humbug-that-tries-to-sneak-in/" target="_blank" rel="noopener noreferrer">MAF EAP – Holidays – How to manage the BAH HUMBUG that tries to sneak in</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">Holidays are often a fun break during a busy year – a long weekend here and there is an event many of us can get behind.  However, when a short holiday break turns into a full holiday season, we know that this is a diffe…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/directorates/stmd/prizes-challenges-crowdsourcing-program/nasa-announces-mid-power-electric-rocket-challenge-for-us-companies/" target="_blank" rel="noopener noreferrer">NASA Announces Mid-Power Electric Rocket Challenge for US Companies</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">NASA launched a new competition inviting U.S. companies to produce prototypes of mid-power Hall effect thrusters – a type of electric propulsion system considered crucial for future space operations and exploration. Hall…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/image-article/empire-state-building-goes-gold-for-voyager/" target="_blank" rel="noopener noreferrer">Empire State Building Goes Gold for Voyager</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">The Empire State Building is seen illuminated in gold to celebrate NASA’s Voyager 1 spacecraft as it was about to pass one light-day away from Earth, a distance reached by no other human-made object, Nov. 17, 2026. The c…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-the-moon-base/" target="_blank" rel="noopener noreferrer">What Is the Moon Base?</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">This article is for students. NASA is returning astronauts to the Moon – and this time they will spend more time on the lunar surface. The Moon Base is humanity’s first lunar outpost. It will be a place where astronauts …</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/get-involved/citizen-science/thank-you-for-doing-nasa-science/" target="_blank" rel="noopener noreferrer">Thank You for Doing NASA Science!</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">It’s Thanksgiving time, and we’re giving thanks to you for doing NASA Science with us! You and NASA’s other volunteers have enabled an incredible banquet of discoveries—by taking data, analyzing data, writing code, writi…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/missions/webb/nasa-data-clinches-first-of-its-kind-stellar-merger/" target="_blank" rel="noopener noreferrer">NASA Data Clinches First-of-Its-Kind Stellar Merger</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">Researchers recently identified a first of its kind: A star slightly less massive than the Sun spiraled into and merged with a puffy supergiant star at the outskirts of our neighboring Andromeda galaxy. They nicknamed th…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/image-article/apod-2026-november-18-an-m-class-solar-flare/" target="_blank" rel="noopener noreferrer">APOD: 2026 November 18 – A Medium-Sized Solar Flare</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">APOD Science APOD APOD: 2026 November 18 – A… Today’s APOD Archive Submissions Index Search Calendar RSS Education About Discuss   APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or phot…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/earth/earth-observatory/sierra-snow-season-spins-up/" target="_blank" rel="noopener noreferrer">Sierra Snow Season Spins Up</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-18</span>
+          
+        </div>
+        <div class="article-card__summary">A widespread, early-season snowstorm blanketed California’s mountains in white in mid-November 2026.</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/centers-and-facilities/glenn/nasa-launches-nuclear-power-systems-student-contest/" target="_blank" rel="noopener noreferrer">NASA Launches Nuclear Power Systems Student Contest</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">NASA’s Power to Explore Student Challenge kicked off Tuesday, Nov. 17. The science, engineering, technology, and mathematics (STEM) challenge invites kindergarten through 12th grade students in the United States to learn…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/open-science/nasa-space-apps-challenge-breaks-global-hackathon-records/" target="_blank" rel="noopener noreferrer">NASA Space Apps Challenge Breaks Global Hackathon Records</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">On Nov. 14 and 15, NASA held the annual Space Apps Challenge with a record-breaking 181,835 registered participants taking part in 593 events around the world. The annual hackathon invites participants to use NASA’s open…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/directorates/stmd/prizes-challenges-crowdsourcing-program/center-of-excellence-for-collaborative-innovation-coeci/bps-digital-avatar-challenge/" target="_blank" rel="noopener noreferrer">BPS Digital AVATAR Challenge</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">The NASA Space Biology Program within the Biological and Physical Sciences (BPS) Division investigates how living systems respond across the full spectrum of biological organization to advance understanding of how living…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/missions/chandra/new-album-of-baby-star-sounds-shared-by-nasas-chandra/" target="_blank" rel="noopener noreferrer">New Album of Baby Star Sounds Shared by NASA’s Chandra</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">A new album from NASA’s Chandra X-ray Observatory collects snapshots of baby stars across the galaxy and beyond and transforms that data into sound. Four new sonifications use data of stars that are actively forming, cap…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/news-release/nasa-to-cover-35th-spacex-resupply-mission-space-station-departure/" target="_blank" rel="noopener noreferrer">NASA to Cover 35th SpaceX Resupply Mission Space Station Departure</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">NASA and its international partners are set to receive scientific research samples and hardware as a SpaceX Dragon spacecraft departs the International Space Station no earlier than Wednesday, Nov. 18, for its return to …</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/missions/station/nicer-status-updates/" target="_blank" rel="noopener noreferrer">NICER Status Updates</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">November 17, 2026 NASA’s NICER Telescope Ends Science Operations After studying the universe for six and a half years beyond its initial mission, NASA’s NICER (Neutron star Interior Composition Explorer) telescope on the…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/general/nasa-to-conduct-low-altitude-flights-over-texas-farmland/" target="_blank" rel="noopener noreferrer">NASA to Conduct Low-Altitude Flights Over Texas Farmland</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">Editor’s Note: This article was originally published on Oct. 15, 2026, and has been updated to correct the location and update the duration of the flight deployment. A NASA Dynamic Aviation A200 aircraft will conduct low…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/blog/curiosity-blog-sols-5072-5076-the-return-of-the-polygons/" target="_blank" rel="noopener noreferrer">Curiosity Blog, Sols 5072-5076: The Return of the Polygons</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">Written by Abigail Fraeman, Deputy Project Scientist, Jet Propulsion Laboratory, California Institute of Technology Earth planning date: Friday, Nov. 13, 2026 Curiosity’s past several weeks have been very focused on dril…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/news-release/nasa-invites-media-public-to-view-roman-telescopes-first-images/" target="_blank" rel="noopener noreferrer">NASA Invites Media, Public to View Roman Telescope’s First Images</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">NASA will release the first images from its Nancy Grace Roman Space Telescope during a live stream from the American Geophysical Union (AGU) Annual Meeting in San Francisco at 3:30 p.m. EST (12:30 p.m. PST) Monday, Dec. …</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/image-article/space-selfie-2/" target="_blank" rel="noopener noreferrer">Space Selfie</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-17</span>
+          
+        </div>
+        <div class="article-card__summary">NASA astronaut Anil Menon took this selfie during a spacewalk on Oct. 29, 2026. He and CSA (Canadian Space Agency) astronaut Joshua Kutryk installed a new roll-out solar array on the International Space Station. Get dail…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/blog/perseverance-update-the-ghostly-rocks-of-idubi-bright-remnants-of-aqueous-systems-from-long-ago/" target="_blank" rel="noopener noreferrer">Perseverance Update: The Ghostly Rocks of ‘Idubi’ — Bright Remnants of Aqueous Systems from Long Ago</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-16</span>
+          
+        </div>
+        <div class="article-card__summary">Written by Candice Bedford, Research Scientist at Purdue University Date: Nov. 16, 2026 During the Perseverance rover’s investigation of “Idubi” — an area of ancient Martian crust exposed in the “Lac de Charmes” region, …</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/photojournal/a-collage-showing-49-drill-holes-made-by-nasas-curiosity-mars-rover/" target="_blank" rel="noopener noreferrer">A Collage Showing 49 Drill Holes Made by NASA’s Curiosity Mars Rover</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-16</span>
+          
+        </div>
+        <div class="article-card__summary">Description This collage shows 49 drill holes captured by NASA’s Curiosity Mars rover as of November 2026. Each hole represents a sample collected from rocks on the Martian surface; Curiosity’s drill, located on the end …</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/news-release/nasa-receives-16th-consecutive-clean-financial-audit-opinion/" target="_blank" rel="noopener noreferrer">NASA Receives 16th Consecutive ‘Clean’ Financial Audit Opinion</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-16</span>
+          
+        </div>
+        <div class="article-card__summary">For the 16th consecutive year, NASA has received an unmodified, or “clean,” opinion from an external auditor on its fiscal year 2026 financial statements. The rating is the best possible audit opinion, certifying that NA…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/photojournal/sentinel-6b-in-orbit-around-earth/" target="_blank" rel="noopener noreferrer">Sentinel-6B in Orbit Around Earth</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-16</span>
+          
+        </div>
+        <div class="article-card__summary">Description This artist’s concept shows the Sentinel-6B satellite, which will become the reference satellite for other missions studying sea surface height.</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/image-article/thunderbirds-in-formation/" target="_blank" rel="noopener noreferrer">Thunderbirds in Formation</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-16</span>
+          
+        </div>
+        <div class="article-card__summary">U.S. Air Force Thunderbirds fighter jets pass overhead during the agency’s MAX POWER expo and air show on Saturday, Nov. 7, 2026, at NASA’s Kennedy Space Center in Florida. NASA’s inaugural MAX POWER was an aerospace fes…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://www.nasa.gov/centers-and-facilities/stennis/contractor-to-civil-servant-jim-mirandy/" target="_blank" rel="noopener noreferrer">Contractor to Civil Servant: NASA Welcomes Jim Mirandy</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-16</span>
+          
+        </div>
+        <div class="article-card__summary">The rumble of a rocket engine might be considered a soundtrack for Jim Mirandy’s life. Mirandy has grown up with NASA as a constant presence, and his path to becoming a civil servant at NASA’s Stennis Space Center near B…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/image-article/apod-2026-november-16-ngc-7129-star-formation-with-jets-from-webb/" target="_blank" rel="noopener noreferrer">APOD: 2026 November 16 – NGC 7129: Star Formation with Jets from Webb</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-16</span>
+          
+        </div>
+        <div class="article-card__summary">APOD Science APOD APOD: 2026 November 16 – NGC… Today’s APOD Archive Submissions Index Search Calendar RSS Education About Discuss   APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or ph…</div>
+        
+      </div>
+      
+      <div class="article-card">
+        <div class="article-card__title">
+          <a href="https://science.nasa.gov/earth/earth-observatory/the-last-ice-on-puncak-jaya/" target="_blank" rel="noopener noreferrer">The Last Ice on Puncak Jaya</a>
+        </div>
+        <div class="article-card__meta">
+          <span class="source-badge">NASA News RSS</span>
+          
+          <span class="article-card__date">2026-11-16</span>
+          
+        </div>
+        <div class="article-card__summary">Ice near the summit of the Indonesian mountain peak has shrunk to scattered patches too small to flow like glaciers.</div>
+        
+      </div>
+      
+      
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      Radar Report — generated 2026-11-23T04:31:28.351736+00:00 UTC
+    </footer>
+  </div>
+
+  <!-- Data blocks -->
+  <script id="articles-data" type="application/json">[{"collected_at": "2026-11-23T04:31:28.295255", "link": "https://www.nasa.gov/centers-and-facilities/johnson/65-years-of-human-spaceflight-at-nasa-johnson/", "matched_entities": {}, "published": "2026-11-22T19:13:25", "published_at": "2026-11-22T19:13:25", "source": "NASA News RSS", "summary": "For 65 years, NASA\u2019s Johnson Space Center in Houston has helped shape human spaceflight, from the Gemini missions that demonstrated rendezvous and docking techniques needed for Apollo to the research conducted aboard the International Space Station, which has supported a continuous human presence for more than 26 years. Today, Johnson teams are preparing crews and [\u2026]", "title": "65 Years of Human Spaceflight at NASA Johnson"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://science.nasa.gov/image-article/apod-2026-november-22-swirls-and-colors-on-jupiter-from-juno/", "matched_entities": {}, "published": "2026-11-22T05:05:00", "published_at": "2026-11-22T05:05:00", "source": "NASA News RSS", "summary": "APODScienceAPODAPOD: 2026 November 22 \u2013\u2026Today\u2019s APODArchiveSubmissionsIndexSearchCalendarRSSEducationAboutDiscuss\u00a0 APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a brief explanation written by a professional astronomer. Swirls and Colors on Jupiter from Juno Explanation: What creates the colors in Jupiter\u2019s clouds? No one [\u2026]", "title": "APOD: 2026 November 22 \u2013 Swirls and Colors on Jupiter from Juno"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://science.nasa.gov/image-article/apod-2026-november-21-voyagers-neptune/", "matched_entities": {}, "published": "2026-11-21T05:05:00", "published_at": "2026-11-21T05:05:00", "source": "NASA News RSS", "summary": "APODScienceAPODAPOD: 2026 November 21 \u2013\u2026Today\u2019s APODArchiveSubmissionsIndexSearchCalendarRSSEducationAboutDiscuss\u00a0 APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a brief explanation written by a professional astronomer. Voyager\u2019s Neptune Explanation: Cruising through the outer solar system, the Voyager 2 spacecraft made its closest approach [\u2026]", "title": "APOD: 2026 November 21 \u2013 Voyager\u2019s Neptune"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://science.nasa.gov/photojournal/curiosity-spots-drifting-twilight-clouds/", "matched_entities": {}, "published": "2026-11-20T22:27:05", "published_at": "2026-11-20T22:27:05", "source": "NASA News RSS", "summary": "Description NASA\u2019s Curiosity Mars rover captured these drifting clouds on Oct. 31, 2026, the 5,061st Martian day, or sol, of the mission. The rover uses its navigation cameras to capture post-sunset clouds, called twilight clouds, which appear for only a short time each fall over Gale Crater, which it has been exploring for more than [\u2026]", "title": "Curiosity Spots Drifting Twilight Clouds"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://www.nasa.gov/directorates/rtmd/new-nasa-seed-funding-primes-small-businesses-for-innovation/", "matched_entities": {}, "published": "2026-11-20T20:46:14", "published_at": "2026-11-20T20:46:14", "source": "NASA News RSS", "summary": "Awards to small businesses around the country are addressing some of NASA\u2019s most crucial technology needs for exploration of the Moon and Mars while fueling the U.S. space economy. NASA\u2019s Small Business Innovation Research/Small Business Technology Transfer (SBIR/STTR) program recently selected 302 innovative projects, for a total investment of up to $171 million in seed [\u2026]", "title": "New NASA Seed Funding Primes Small Businesses for Innovation"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://www.nasa.gov/centers-and-facilities/stennis/honor-awards-ceremony-at-stennis/", "matched_entities": {}, "published": "2026-11-20T16:27:46", "published_at": "2026-11-20T16:27:46", "source": "NASA News RSS", "summary": "Employees contributing to NASA\u2019s mission at the agency\u2019s Stennis Space Center near Bay St. Louis, Mississippi, were recognized during the center\u2019s Honor Awards ceremony on Nov. 18.\u00a0\u00a0 Presenting the awards were Christine Powell, NASA Stennis center director, and Jeremy Parsons, the agency\u2019s Artemis program manager responsible for management and oversight of NASA\u2019s initiative to return [\u2026]", "title": "NASA Honor Awards Ceremony Recognizes Employees at Stennis Space Center"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://www.nasa.gov/image-article/nasas-curiosity-mars-rover-collects-samples/", "matched_entities": {}, "published": "2026-11-20T15:53:24", "published_at": "2026-11-20T15:53:24", "source": "NASA News RSS", "summary": "This Nov. 16 collage shows 49 drill holes captured by NASA\u2019s Curiosity Mars rover as of November 2026. Each hole represents a sample collected from rocks on the Martian surface; Curiosity\u2019s drill, located on the end of its robotic arm, drops pulverized rock samples into instruments in its belly that analyze their composition. Learn more [\u2026]", "title": "NASA\u2019s Curiosity Mars Rover Collects Samples"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://science.nasa.gov/image-article/apod-2026-november-20-v-g-r/", "matched_entities": {}, "published": "2026-11-20T05:05:00", "published_at": "2026-11-20T05:05:00", "source": "NASA News RSS", "summary": "APODScienceAPODAPOD: 2026 November\u2026Today\u2019s APODArchiveSubmissionsIndexSearchCalendarRSSEducationAboutDiscuss\u00a0 APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a brief explanation written by a professional astronomer. V-G-R Explanation: On November 17, fans of interstellar spaceflight around planet Earth were invited to shine a message into [\u2026]", "title": "APOD: 2026 November 20 \u2013 V-G-R"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://science.nasa.gov/earth/earth-observatory/the-stormy-southwest-pacific/", "matched_entities": {}, "published": "2026-11-20T05:01:00", "published_at": "2026-11-20T05:01:00", "source": "NASA News RSS", "summary": "Tropical Cyclone Xavier launched the basin\u2019s storm season with a bang.", "title": "The Stormy Southwest Pacific"}, {"collected_at": "2026-11-23T04:31:28.295255", "link": "https://www.nasa.gov/directorates/stmd/prizes-challenges-crowdsourcing-program/center-of-excellence-for-collaborative-innovation-coeci/challenge-public-input-on-life-and-the-world-in-2075/", "matched_entities": {}, "published": "2026-11-19T19:34:20", "published_at": "2026-11-19T19:34:20", "source": "NASA News RSS", "summary": "NASA\u2019s Transformational Tools and Technologies (TTT) is gathering public perspectives on life today and how the world may change by 2075. This challenge asks for conceptual ideas about life in 2075 across four challenge topics. Ideas should explore how future aviation or aerospace systems could: Ideas should be conceptual rather than technical. Award: $20,000 in [\u2026]", "title": "Challenge: Public Input on Life and the World in 2075"}, {"collected_at": "2026-11-22T03:52:10.880296", "link": "https://science.nasa.gov/open-science/fermi-data-pulsar-discovery/", "matched_entities": {}, "published": "2026-11-19T15:33:55", "published_at": "2026-11-19T15:33:55", "source": "NASA News RSS", "summary": "Open data from NASA\u2019s Fermi mission helped an international team of scientists develop a method for finding pulsars about a million times faster than before.", "title": "NASA Science Data Powers New Method to Discover Hard-to-Find Pulsars"}, {"collected_at": "2026-11-22T03:52:10.880296", "link": "https://www.nasa.gov/image-article/lake-pelku/", "matched_entities": {}, "published": "2026-11-19T15:32:39", "published_at": "2026-11-19T15:32:39", "source": "NASA News RSS", "summary": "An astronaut on the International Space Station captured this photograph of Lake Pelku (near center) as the station orbited above Asia. The International Space Station serves as a unique platform for observing Earth with both hands-on and automated equipment. Station crew members have produced hundreds of thousands of images. These images record phenomena in real [\u2026]", "title": "Lake Pelku"}, {"collected_at": "2026-11-21T04:38:00.833942", "link": "https://www.nasa.gov/image-article/latest-rs-25-engine-test-in-support-of-future-artemis-missions/", "matched_entities": {}, "published": "2026-11-19T14:44:39", "published_at": "2026-11-19T14:44:39", "source": "NASA News RSS", "summary": "NASA tested RS-25 engine No. 10001 on Nov. 18 on the Fred Haise Test Stand at NASA\u2019s Stennis Space Center near Bay St. Louis, Mississippi. Test teams fired the developmental engine for the planned duration of three minutes and 20 seconds (200 seconds). While this developmental engine will not be used in flight, the hot [\u2026]", "title": "NASA Conducts Latest RS-25 Engine Test in Support of Future Artemis Missions"}, {"collected_at": "2026-11-20T04:42:50.013246", "link": "https://www.nasa.gov/news-release/nasas-voyager-1-makes-history-reaching-one-light-day-from-earth/", "matched_entities": {}, "published": "2026-11-19T14:31:15", "published_at": "2026-11-19T14:31:15", "source": "NASA News RSS", "summary": "NASA\u2019s Voyager 1 probe, humanity\u2019s farthest-flying spacecraft, has reached one light-day from Earth, after more than 49 years of constant travel. A light-day is the distance light travels in 24 hours, equaling about 16.1 billion miles (25.9 billion kilometers). The spacecraft achieved the milestone at 2:16 a.m. PST (5:16 a.m. EST) Nov. 18. Voyager team [\u2026]", "title": "NASA\u2019s Voyager 1 Makes History Reaching One Light-Day From Earth"}, {"collected_at": "2026-11-20T04:42:50.013246", "link": "https://science.nasa.gov/image-article/apod-2026-november-19-the-horsehead-and-flame-nebulas/", "matched_entities": {}, "published": "2026-11-19T05:05:00", "published_at": "2026-11-19T05:05:00", "source": "NASA News RSS", "summary": "APODScienceAPODAPOD: 2026 November 19 \u2013 The\u2026Today\u2019s APODArchiveSubmissionsIndexSearchCalendarRSSEducationAboutDiscuss\u00a0 APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a brief explanation written by a professional astronomer. OriginalAnnotated The Horsehead and Flame Nebulas Explanation: Today\u2019s image could have been a painting. But what [\u2026]", "title": "APOD: 2026 November 19 \u2013 The Horsehead and Flame Nebulas"}, {"collected_at": "2026-11-20T04:42:50.013246", "link": "https://science.nasa.gov/earth/earth-observatory/el-nino-rains-paint-the-atacama/", "matched_entities": {}, "published": "2026-11-19T05:00:00", "published_at": "2026-11-19T05:00:00", "source": "NASA News RSS", "summary": "Winter precipitation helped wake dormant seeds in northern Chile, carpeting the desert with what may be the region\u2019s most extensive flowering of the satellite era.", "title": "El Ni\u00f1o Rains Paint the Atacama"}, {"collected_at": "2026-11-20T04:42:50.013246", "link": "https://www.nasa.gov/news-release/nasa-sets-coverage-for-northrop-grumman-crs-25-launch-prelaunch/", "matched_entities": {}, "published": "2026-11-18T22:19:17", "published_at": "2026-11-18T22:19:17", "source": "NASA News RSS", "summary": "NASA, Northrop Grumman, and SpaceX are targeting no earlier than 10:47 a.m. EST, Sunday, Nov. 29, for the next launch delivering science investigations, supplies, and equipment to the International Space Station. The agency also will hold a prelaunch media teleconference on Monday, Nov. 23. Filled with approximately 11,000 pounds of cargo, the Northrop Grumman Cygnus [\u2026]", "title": "NASA Sets Coverage for Northrop Grumman CRS-25 Launch, Prelaunch"}, {"collected_at": "2026-11-20T04:42:50.013246", "link": "https://www.nasa.gov/centers-and-facilities/michoud/maf-eap/maf-eap-holidays-how-to-manage-the-bah-humbug-that-tries-to-sneak-in/", "matched_entities": {}, "published": "2026-11-18T18:58:27", "published_at": "2026-11-18T18:58:27", "source": "NASA News RSS", "summary": "Holidays are often a fun break during a busy year \u2013 a long weekend here and there is an event many of us can get behind.\u00a0 However, when a short holiday break turns into a full holiday season, we know that this is a different \u201cball game\u201d. Everyone has stress about something \u2013 some people [\u2026]", "title": "MAF EAP \u2013 Holidays \u2013 How to manage the BAH HUMBUG that tries to sneak in"}, {"collected_at": "2026-11-20T04:42:50.013246", "link": "https://www.nasa.gov/directorates/stmd/prizes-challenges-crowdsourcing-program/nasa-announces-mid-power-electric-rocket-challenge-for-us-companies/", "matched_entities": {}, "published": "2026-11-18T18:12:32", "published_at": "2026-11-18T18:12:32", "source": "NASA News RSS", "summary": "NASA launched a new competition inviting U.S. companies to produce prototypes of mid-power Hall effect thrusters \u2013 a type of electric propulsion system considered crucial for future space operations and exploration. Hall effect thrusters use an electric field to accelerate a propellant gas, producing efficient thrust for long-duration missions. Used for propelling satellites and deep [\u2026]", "title": "NASA Announces Mid-Power Electric Rocket Challenge for US Companies"}, {"collected_at": "2026-11-19T04:52:32.030133", "link": "https://www.nasa.gov/image-article/empire-state-building-goes-gold-for-voyager/", "matched_entities": {}, "published": "2026-11-18T17:50:26", "published_at": "2026-11-18T17:50:26", "source": "NASA News RSS", "summary": "The Empire State Building is seen illuminated in gold to celebrate NASA\u2019s Voyager 1 spacecraft as it was about to pass one light-day away from Earth, a distance reached by no other human-made object, Nov. 17, 2026. The color gold represents the gold-plated copper phonograph record that is flying on Voyager; the Golden Record contains [\u2026]", "title": "Empire State Building Goes Gold for Voyager"}, {"collected_at": "2026-11-19T04:52:32.030133", "link": "https://www.nasa.gov/learning-resources/for-kids-and-students/what-is-the-moon-base/", "matched_entities": {}, "published": "2026-11-18T17:36:03", "published_at": "2026-11-18T17:36:03", "source": "NASA News RSS", "summary": "This article is for students. NASA is returning astronauts to the Moon \u2013 and this time they will spend more time on the lunar surface. The Moon Base is humanity\u2019s first lunar outpost. It will be a place where astronauts live, work, and explore. ______________________________________________________________________ Words to Know outpost: a station or base located in [\u2026]", "title": "What Is the Moon Base?"}, {"collected_at": "2026-11-19T04:52:32.030133", "link": "https://science.nasa.gov/get-involved/citizen-science/thank-you-for-doing-nasa-science/", "matched_entities": {}, "published": "2026-11-18T17:32:52", "published_at": "2026-11-18T17:32:52", "source": "NASA News RSS", "summary": "It\u2019s Thanksgiving time, and we\u2019re giving thanks to you for doing NASA Science with us! You and NASA\u2019s other volunteers have enabled an incredible banquet of discoveries\u2014by taking data, analyzing data, writing code, writing papers, and even inventing your own science projects. Whether you\u2019re an expert participant or someone who\u2019s just started your science journey, [\u2026]", "title": "Thank You for Doing NASA Science!"}, {"collected_at": "2026-11-19T04:52:32.030133", "link": "https://science.nasa.gov/missions/webb/nasa-data-clinches-first-of-its-kind-stellar-merger/", "matched_entities": {}, "published": "2026-11-18T16:00:00", "published_at": "2026-11-18T16:00:00", "source": "NASA News RSS", "summary": "Researchers recently identified a first of its kind: A star slightly less massive than the Sun spiraled into and merged with a puffy supergiant star at the outskirts of our neighboring Andromeda galaxy. They nicknamed the newly single, potentially \u201crejuvenated\u201d star Bao. Their NASA-funded discovery was then bolstered by quick-turn observations from NASA\u2019s James Webb [\u2026]", "title": "NASA Data Clinches First-of-Its-Kind Stellar Merger"}, {"collected_at": "2026-11-19T04:52:32.030133", "link": "https://science.nasa.gov/image-article/apod-2026-november-18-an-m-class-solar-flare/", "matched_entities": {}, "published": "2026-11-18T05:05:00", "published_at": "2026-11-18T05:05:00", "source": "NASA News RSS", "summary": "APOD Science APOD APOD: 2026 November 18 \u2013 A\u2026 Today\u2019s APOD Archive Submissions Index Search Calendar RSS Education About Discuss \u00a0 APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a brief explanation written by a professional astronomer. A Medium-Sized [\u2026]", "title": "APOD: 2026 November 18 \u2013 A Medium-Sized Solar Flare"}, {"collected_at": "2026-11-19T04:52:32.030133", "link": "https://science.nasa.gov/earth/earth-observatory/sierra-snow-season-spins-up/", "matched_entities": {}, "published": "2026-11-18T05:01:00", "published_at": "2026-11-18T05:01:00", "source": "NASA News RSS", "summary": "A widespread, early-season snowstorm blanketed California\u2019s mountains in white in mid-November 2026.", "title": "Sierra Snow Season Spins Up"}, {"collected_at": "2026-11-19T04:52:32.030133", "link": "https://science.nasa.gov/centers-and-facilities/glenn/nasa-launches-nuclear-power-systems-student-contest/", "matched_entities": {}, "published": "2026-11-17T22:02:48", "published_at": "2026-11-17T22:02:48", "source": "NASA News RSS", "summary": "NASA\u2019s Power to Explore Student Challenge kicked off Tuesday, Nov. 17. The science, engineering, technology, and mathematics (STEM) challenge invites kindergarten through 12th grade students in the United States to learn about space nuclear power systems and illustrate how these nuclear \u201cbatteries\u201d could help power their lunar exploration vision. Students are also invited to write [\u2026]", "title": "NASA Launches Nuclear Power Systems Student Contest"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://science.nasa.gov/open-science/nasa-space-apps-challenge-breaks-global-hackathon-records/", "matched_entities": {}, "published": "2026-11-17T21:50:34", "published_at": "2026-11-17T21:50:34", "source": "NASA News RSS", "summary": "On Nov. 14 and 15, NASA held the annual Space Apps Challenge with a record-breaking 181,835 registered participants taking part in 593 events around the world. The annual hackathon invites participants to use NASA\u2019s open data to address one of 14 challenges focused on space exploration or Earth science. This year, the hackathon drew 59% [\u2026]", "title": "NASA Space Apps Challenge Breaks Global Hackathon Records"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://www.nasa.gov/directorates/stmd/prizes-challenges-crowdsourcing-program/center-of-excellence-for-collaborative-innovation-coeci/bps-digital-avatar-challenge/", "matched_entities": {}, "published": "2026-11-17T20:39:38", "published_at": "2026-11-17T20:39:38", "source": "NASA News RSS", "summary": "The NASA Space Biology Program within the Biological and Physical Sciences (BPS) Division investigates how living systems respond across the full spectrum of biological organization to advance understanding of how living systems respond to the unique stressors of space exploration\u2014including microgravity, ionizing radiation, low magnetic fields, and elevated CO\u2082. As NASA prepares for long-duration deep [\u2026]", "title": "BPS Digital AVATAR Challenge"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://science.nasa.gov/missions/chandra/new-album-of-baby-star-sounds-shared-by-nasas-chandra/", "matched_entities": {}, "published": "2026-11-17T20:26:17", "published_at": "2026-11-17T20:26:17", "source": "NASA News RSS", "summary": "A new album from NASA\u2019s Chandra X-ray Observatory collects snapshots of baby stars across the galaxy and beyond and transforms that data into sound. Four new sonifications use data of stars that are actively forming, captured by Chandra and other NASA telescopes By studying places in the universe where stars are currently being born and [\u2026]", "title": "New Album of Baby Star Sounds Shared by NASA\u2019s Chandra"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://www.nasa.gov/news-release/nasa-to-cover-35th-spacex-resupply-mission-space-station-departure/", "matched_entities": {}, "published": "2026-11-17T19:16:22", "published_at": "2026-11-17T19:16:22", "source": "NASA News RSS", "summary": "NASA and its international partners are set to receive scientific research samples and hardware as a SpaceX Dragon spacecraft departs the International Space Station no earlier than Wednesday, Nov. 18, for its return to Earth. Pending weather conditions, the Dragon spacecraft will undock from the Harmony module\u2019s space-facing port at 11:05 a.m. EST, following a [\u2026]", "title": "NASA to Cover 35th SpaceX Resupply Mission Space Station Departure"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://www.nasa.gov/missions/station/nicer-status-updates/", "matched_entities": {}, "published": "2026-11-17T18:18:16", "published_at": "2026-11-17T18:18:16", "source": "NASA News RSS", "summary": "November 17, 2026 NASA\u2019s NICER Telescope Ends Science Operations After studying the universe for six and a half years beyond its initial mission, NASA\u2019s NICER (Neutron star Interior Composition Explorer) telescope on the International Space Station has ended science operations.\u00a0 The mission and space station teams are now focused on plans to finalize NICER\u2019s 8-year [\u2026]", "title": "NICER Status Updates"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://www.nasa.gov/general/nasa-to-conduct-low-altitude-flights-over-texas-farmland/", "matched_entities": {}, "published": "2026-11-17T17:12:20", "published_at": "2026-11-17T17:12:20", "source": "NASA News RSS", "summary": "Editor\u2019s Note: This article was originally published on Oct. 15, 2026, and has been updated to correct the location and update the duration of the flight deployment. A NASA Dynamic Aviation A200 aircraft will conduct low-flying research flights over farmland near Amarillo, Texas, from Thursday, Oct. 22, through Monday, Nov. 2. These flights will measure [\u2026]", "title": "NASA to Conduct Low-Altitude Flights Over Texas Farmland"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://science.nasa.gov/blog/curiosity-blog-sols-5072-5076-the-return-of-the-polygons/", "matched_entities": {}, "published": "2026-11-17T17:06:07", "published_at": "2026-11-17T17:06:07", "source": "NASA News RSS", "summary": "Written by Abigail Fraeman, Deputy Project Scientist, Jet Propulsion Laboratory, California Institute of Technology Earth planning date: Friday, Nov. 13, 2026 Curiosity\u2019s past several weeks have been very focused on drilling and analysis of the \u201cBasque Lakes\u201d and \u201cNazca\u201d samples. We learned a lot from those drilled samples, but it\u2019s time to hit the Martian [\u2026]", "title": "Curiosity Blog, Sols 5072-5076: The Return of the Polygons"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://www.nasa.gov/news-release/nasa-invites-media-public-to-view-roman-telescopes-first-images/", "matched_entities": {}, "published": "2026-11-17T17:00:29", "published_at": "2026-11-17T17:00:29", "source": "NASA News RSS", "summary": "NASA will release the first images from its Nancy Grace Roman Space Telescope during a live stream from the American Geophysical Union (AGU) Annual Meeting in San Francisco at 3:30 p.m. EST (12:30 p.m. PST) Monday, Dec. 7. The images will showcase the unique scientific capabilities of Roman, which will soon capture deep, panoramic, never-before-seen [\u2026]", "title": "NASA Invites Media, Public to View Roman Telescope\u2019s First Images"}, {"collected_at": "2026-11-18T04:58:21.533371", "link": "https://www.nasa.gov/image-article/space-selfie-2/", "matched_entities": {}, "published": "2026-11-17T16:51:14", "published_at": "2026-11-17T16:51:14", "source": "NASA News RSS", "summary": "NASA astronaut Anil Menon took this selfie during a spacewalk on Oct. 29, 2026. He and CSA (Canadian Space Agency) astronaut Joshua Kutryk installed a new roll-out solar array on the International Space Station. Get daily updates from the space station. Image credit: NASA/Anil Menon", "title": "Space Selfie"}, {"collected_at": "2026-11-17T05:33:03.272992", "link": "https://science.nasa.gov/blog/perseverance-update-the-ghostly-rocks-of-idubi-bright-remnants-of-aqueous-systems-from-long-ago/", "matched_entities": {}, "published": "2026-11-16T23:12:45", "published_at": "2026-11-16T23:12:45", "source": "NASA News RSS", "summary": "Written by Candice Bedford, Research Scientist at Purdue University Date: Nov. 16, 2026 During the Perseverance rover\u2019s investigation of \u201cIdubi\u201d \u2014 an area of ancient Martian crust exposed in the \u201cLac de Charmes\u201d region, outside of Jezero crater \u2014 the Perseverance rover team has been captivated by a cluster of eerily bright, light-toned rocks in [\u2026]", "title": "Perseverance Update: The Ghostly Rocks of \u2018Idubi\u2019 \u2014 Bright Remnants of Aqueous Systems from Long Ago"}, {"collected_at": "2026-11-17T05:33:03.272992", "link": "https://science.nasa.gov/photojournal/a-collage-showing-49-drill-holes-made-by-nasas-curiosity-mars-rover/", "matched_entities": {}, "published": "2026-11-16T22:05:23", "published_at": "2026-11-16T22:05:23", "source": "NASA News RSS", "summary": "Description This collage shows 49 drill holes captured by NASA\u2019s Curiosity Mars rover as of November 2026. Each hole represents a sample collected from rocks on the Martian surface; Curiosity\u2019s drill, located on the end of its robotic arm, drops pulverized rock samples into instruments in its belly that analyze their composition. These images were [\u2026]", "title": "A Collage Showing 49 Drill Holes Made by NASA\u2019s Curiosity Mars Rover"}, {"collected_at": "2026-11-17T05:33:03.272992", "link": "https://www.nasa.gov/news-release/nasa-receives-16th-consecutive-clean-financial-audit-opinion/", "matched_entities": {}, "published": "2026-11-16T20:30:40", "published_at": "2026-11-16T20:30:40", "source": "NASA News RSS", "summary": "For the 16th consecutive year, NASA has received an unmodified, or \u201cclean,\u201d opinion from an external auditor on its fiscal year 2026 financial statements. The rating is the best possible audit opinion, certifying that NASA\u2019s financial statements conform with Generally Accepted Accounting Principles for federal agencies and accurately present the agency\u2019s financial position. \u201cOur responsibility [\u2026]", "title": "NASA Receives 16th Consecutive \u2018Clean\u2019 Financial Audit Opinion"}, {"collected_at": "2026-11-17T05:33:03.272992", "link": "https://science.nasa.gov/photojournal/sentinel-6b-in-orbit-around-earth/", "matched_entities": {}, "published": "2026-11-16T18:52:32", "published_at": "2026-11-16T18:52:32", "source": "NASA News RSS", "summary": "Description This artist\u2019s concept shows the Sentinel-6B satellite, which will become the reference satellite for other missions studying sea surface height.", "title": "Sentinel-6B in Orbit Around Earth"}, {"collected_at": "2026-11-17T05:33:03.272992", "link": "https://www.nasa.gov/image-article/thunderbirds-in-formation/", "matched_entities": {}, "published": "2026-11-16T18:34:47", "published_at": "2026-11-16T18:34:47", "source": "NASA News RSS", "summary": "U.S. Air Force Thunderbirds fighter jets pass overhead during the agency\u2019s MAX POWER expo and air show on Saturday, Nov. 7, 2026, at NASA\u2019s Kennedy Space Center in Florida. NASA\u2019s inaugural MAX POWER was an aerospace festival celebrating the past, present, and future of flight and space exploration in honor of America\u2019s 250th anniversary. Image [\u2026]", "title": "Thunderbirds in Formation"}, {"collected_at": "2026-11-17T05:33:03.272992", "link": "https://www.nasa.gov/centers-and-facilities/stennis/contractor-to-civil-servant-jim-mirandy/", "matched_entities": {}, "published": "2026-11-16T15:22:09", "published_at": "2026-11-16T15:22:09", "source": "NASA News RSS", "summary": "The rumble of a rocket engine might be considered a soundtrack for Jim Mirandy\u2019s life. Mirandy has grown up with NASA as a constant presence, and his path to becoming a civil servant at NASA\u2019s Stennis Space Center near Bay St. Louis, Mississippi, has been decades in the making. Hired under the agency\u2019s workforce directive [\u2026]", "title": "Contractor to Civil Servant: NASA Welcomes Jim Mirandy"}, {"collected_at": "2026-11-17T05:33:03.272992", "link": "https://science.nasa.gov/image-article/apod-2026-november-16-ngc-7129-star-formation-with-jets-from-webb/", "matched_entities": {}, "published": "2026-11-16T05:05:00", "published_at": "2026-11-16T05:05:00", "source": "NASA News RSS", "summary": "APOD Science APOD APOD: 2026 November 16 \u2013 NGC\u2026 Today\u2019s APOD Archive Submissions Index Search Calendar RSS Education About Discuss \u00a0 APOD Astronomy Picture of the Day Discover the cosmos! Each day a different image or photograph of our fascinating universe is featured, along with a brief explanation written by a professional astronomer. NGC 7129: [\u2026]", "title": "APOD: 2026 November 16 \u2013 NGC 7129: Star Formation with Jets from Webb"}, {"collected_at": "2026-11-17T05:33:03.272992", "link": "https://science.nasa.gov/earth/earth-observatory/the-last-ice-on-puncak-jaya/", "matched_entities": {}, "published": "2026-11-16T05:00:00", "published_at": "2026-11-16T05:00:00", "source": "NASA News RSS", "summary": "Ice near the summit of the Indonesian mountain peak has shrunk to scattered patches too small to flow like glaciers.", "title": "The Last Ice on Puncak Jaya"}]</script>
+  <script id="entities-data" type="application/json">{}</script>
+
+  <!-- Chart.js: local first, CDN fallback -->
+  <script src="static/chart.min.js"></script>
+  <script>
+    if (typeof Chart === 'undefined') {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js';
+      document.head.appendChild(s);
+    }
+  </script>
+  <script>
+    /* === CSV Export === */
+    function exportCSV() {
+      var data = window.__filteredArticles || readJson("articles-data", []);
+      if (!data.length) { alert("No data to export"); return; }
+      var BOM = "\uFEFF";
+      var headers = ["Title","Source","Published","Summary","Entities","Link"];
+      var rows = [headers.join(",")];
+      for (var i = 0; i < data.length; i++) {
+        var a = data[i];
+        var ents = "";
+        if (a.matched_entities) {
+          ents = Object.entries(a.matched_entities).map(function(e) {
+            return e[0] + ": " + (Array.isArray(e[1]) ? e[1].join(", ") : e[1]);
+          }).join("; ");
+        }
+        var pub = a.published_at || a.published || "";
+        if (pub) { var d = new Date(String(pub)); if (!isNaN(d.getTime())) pub = d.toISOString().slice(0,10); }
+        rows.push([
+          csvEsc(a.title || ""), csvEsc(a.source || ""), csvEsc(String(pub)),
+          csvEsc(a.summary || ""), csvEsc(ents), csvEsc(a.link || "")
+        ].join(","));
+      }
+      var csv = BOM + rows.join("\n");
+      var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var el = document.createElement("a");
+      var title = document.querySelector(".header__title");
+      var catName = title ? title.textContent.trim().replace(/\s+/g, "_") : "report";
+      var dateStr = new Date().toISOString().slice(0,10);
+      el.href = url; el.download = catName + "_report_" + dateStr + ".csv";
+      document.body.appendChild(el); el.click(); document.body.removeChild(el);
+      URL.revokeObjectURL(url);
+    }
+    function csvEsc(s) {
+      if (s == null) return '""';
+      s = String(s);
+      if (s.indexOf(",") >= 0 || s.indexOf('"') >= 0 || s.indexOf("\n") >= 0)
+        return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+
+    /* === Filter Logic === */
+    function readJson(id, fallback) {
+      var el = document.getElementById(id);
+      if (!el) return fallback;
+      var txt = (el.textContent || "").trim();
+      if (!txt) return fallback;
+      try { return JSON.parse(txt); } catch (e) { return fallback; }
+    }
+
+    var _allArticles = readJson("articles-data", []);
+    window.__filteredArticles = _allArticles;
+    var _filterTimer = null;
+
+    function populateFilters() {
+      var entitySet = new Set(), sourceSet = new Set();
+      for (var i = 0; i < _allArticles.length; i++) {
+        var a = _allArticles[i];
+        if (a.source) sourceSet.add(a.source);
+        if (a.matched_entities) {
+          Object.keys(a.matched_entities).forEach(function(e) { entitySet.add(e); });
+        }
+      }
+      var eSelect = document.getElementById("filter-entity");
+      entitySet.forEach(function(e) {
+        var opt = document.createElement("option"); opt.value = e; opt.textContent = e;
+        eSelect.appendChild(opt);
+      });
+      var sSelect = document.getElementById("filter-source");
+      sourceSet.forEach(function(s) {
+        var opt = document.createElement("option"); opt.value = s; opt.textContent = s;
+        sSelect.appendChild(opt);
+      });
+    }
+
+    function getArticleDateForFilter(a) {
+      var v = a && (a.published_at || a.published || a.date || a.datetime);
+      if (!v) return null;
+      var d = new Date(String(v));
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function applyFilters() {
+      var entity = document.getElementById("filter-entity").value;
+      var source = document.getElementById("filter-source").value;
+      var dateFrom = document.getElementById("filter-date-from").value;
+      var dateTo = document.getElementById("filter-date-to").value;
+      var search = document.getElementById("filter-search").value.toLowerCase().trim();
+
+      var fromDate = dateFrom ? new Date(dateFrom + "T00:00:00") : null;
+      var toDate = dateTo ? new Date(dateTo + "T23:59:59") : null;
+
+      var filtered = _allArticles.filter(function(a) {
+        if (entity && !(a.matched_entities && a.matched_entities[entity])) return false;
+        if (source && a.source !== source) return false;
+        if (fromDate || toDate) {
+          var d = getArticleDateForFilter(a);
+          if (d) {
+            if (fromDate && d < fromDate) return false;
+            if (toDate && d > toDate) return false;
+          }
+        }
+        if (search) {
+          var title = (a.title || "").toLowerCase();
+          var summary = (a.summary || "").toLowerCase();
+          if (title.indexOf(search) < 0 && summary.indexOf(search) < 0) return false;
+        }
+        return true;
+      });
+
+      window.__filteredArticles = filtered;
+      updateArticleDisplay(filtered);
+      rebuildCharts(filtered);
+
+      var statusEl = document.getElementById("filter-status");
+      var clearBtn = document.getElementById("filter-clear");
+      var hasFilters = entity || source || dateFrom || dateTo || search;
+      if (hasFilters) {
+        statusEl.textContent = "Showing " + filtered.length + " of " + _allArticles.length + " articles";
+        clearBtn.style.display = "inline";
+      } else {
+        statusEl.textContent = "";
+        clearBtn.style.display = "none";
+      }
+      var csvBtn = document.getElementById("btn-csv");
+      if (csvBtn) csvBtn.disabled = filtered.length === 0;
+    }
+
+    function clearFilters() {
+      document.getElementById("filter-entity").value = "";
+      document.getElementById("filter-source").value = "";
+      document.getElementById("filter-date-from").value = "";
+      document.getElementById("filter-date-to").value = "";
+      document.getElementById("filter-search").value = "";
+      applyFilters();
+    }
+
+    function updateArticleDisplay(filtered) {
+      var container = document.getElementById("articles-list");
+      if (!container) return;
+      var filteredLinks = new Set(filtered.map(function(a) { return a.link; }));
+      var cards = container.querySelectorAll(".article-card");
+      for (var i = 0; i < cards.length; i++) {
+        var link = cards[i].querySelector("a");
+        if (link) {
+          cards[i].style.display = filteredLinks.has(link.href) ? "" : "none";
+        }
+      }
+      var empty = container.querySelector(".empty-state");
+      if (empty) {
+        empty.style.display = (filtered.length === 0 && _allArticles.length > 0) ? "" : "none";
+        if (filtered.length === 0 && _allArticles.length > 0) {
+          var msg = empty.querySelector(".empty-state__message");
+          if (msg) msg.textContent = "No articles match your current filters. Try adjusting or clearing them.";
+        }
+      }
+    }
+
+    /* Chart instances for rebuilding */
+    var _chartInstances = {};
+
+    function rebuildCharts(data) {
+      Object.keys(_chartInstances).forEach(function(id) {
+        if (_chartInstances[id]) _chartInstances[id].destroy();
+      });
+      _chartInstances = {};
+      buildAllCharts(data);
+    }
+
+    /* Attach filter events */
+    document.addEventListener("DOMContentLoaded", function() {
+      populateFilters();
+      ["filter-entity", "filter-source", "filter-date-from", "filter-date-to"].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener("change", applyFilters);
+      });
+      var searchEl = document.getElementById("filter-search");
+      if (searchEl) {
+        searchEl.addEventListener("input", function() {
+          clearTimeout(_filterTimer);
+          _filterTimer = setTimeout(applyFilters, 300);
+        });
+      }
+    });
+  </script>
+  <script>
+    (function () {
+      function readJson(id, fallback) {
+        var el = document.getElementById(id);
+        if (!el) return fallback;
+        var txt = (el.textContent || "").trim();
+        if (!txt) return fallback;
+        try { return JSON.parse(txt); } catch (e) { return fallback; }
+      }
+
+      var articles = readJson("articles-data", []);
+      var entityCountsRaw = readJson("entities-data", {});
+
+      function normalizeEntityPairs(raw) {
+        if (!raw) return [];
+        if (Array.isArray(raw)) {
+          if (raw.length && Array.isArray(raw[0]) && raw[0].length >= 2)
+            return raw.map(function(p) { return [String(p[0]), Number(p[1]) || 0]; });
+          if (raw.length && typeof raw[0] === "object")
+            return raw.map(function(o) { return [String(o.name || o.entity || ""), Number(o.count || o.value || 0) || 0]; }).filter(function(p) { return p[0]; });
+          return [];
+        }
+        if (typeof raw === "object")
+          return Object.entries(raw).map(function(e) { return [String(e[0]), Number(e[1]) || 0]; });
+        return [];
+      }
+
+      function getArticleDate(a) {
+        var v = a && (a.published_at || a.published || a.date || a.datetime || a.publishedAt);
+        if (!v) return null;
+        var s = String(v);
+        var direct = new Date(s);
+        if (!isNaN(direct.getTime())) return direct;
+        var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) { var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])); if (!isNaN(d.getTime())) return d; }
+        return null;
+      }
+
+      function toDayKey(d) {
+        var y = d.getFullYear();
+        var mo = String(d.getMonth() + 1).padStart(2, "0");
+        var day = String(d.getDate()).padStart(2, "0");
+        return y + "-" + mo + "-" + day;
+      }
+
+      function buildTimeline(items) {
+        var map = new Map();
+        for (var i = 0; i < items.length; i++) {
+          var d = getArticleDate(items[i]);
+          if (!d) continue;
+          var k = toDayKey(d);
+          map.set(k, (map.get(k) || 0) + 1);
+        }
+        var keys = Array.from(map.keys()).sort();
+        return { labels: keys, values: keys.map(function(k) { return map.get(k) || 0; }) };
+      }
+
+      function buildSources(items) {
+        var map = new Map();
+        for (var i = 0; i < items.length; i++) {
+          var s = (items[i] && items[i].source) ? String(items[i].source).trim() : "unknown";
+          var key = s || "unknown";
+          map.set(key, (map.get(key) || 0) + 1);
+        }
+        var pairs = Array.from(map.entries()).sort(function(a, b) { return b[1] - a[1]; });
+        var top = pairs.slice(0, 10);
+        var rest = pairs.slice(10).reduce(function(acc, p) { return acc + p[1]; }, 0);
+        var labels = top.map(function(p) { return p[0]; });
+        var values = top.map(function(p) { return p[1]; });
+        if (rest > 0) { labels.push("other"); values.push(rest); }
+        return { labels: labels, values: values };
+      }
+
+      function palette(n) {
+        var base = [
+          "rgba(51,214,197,.86)", "rgba(25,167,195,.78)", "rgba(246,200,76,.86)",
+          "rgba(120,162,255,.78)", "rgba(255,91,110,.74)", "rgba(160,118,255,.70)",
+          "rgba(95,222,132,.70)", "rgba(255,154,74,.70)"
+        ];
+        var out = [];
+        for (var i = 0; i < n; i++) out.push(base[i % base.length]);
+        return out;
+      }
+
+      function buildFreshness(items) {
+        var lagBuckets = { "0-1h": 0, "1-6h": 0, "6-24h": 0, "1-3d": 0, "3-7d": 0, "7d+": 0 };
+        for (var i = 0; i < items.length; i++) {
+          var a = items[i];
+          var pubStr = a && (a.published_at || a.published);
+          var collStr = a && a.collected_at;
+          if (!pubStr || !collStr) continue;
+          var pubDate = new Date(String(pubStr));
+          var collDate = new Date(String(collStr));
+          if (isNaN(pubDate.getTime()) || isNaN(collDate.getTime())) continue;
+          var lagHours = (collDate.getTime() - pubDate.getTime()) / (1000 * 60 * 60);
+          if (lagHours < 1) lagBuckets["0-1h"]++;
+          else if (lagHours < 6) lagBuckets["1-6h"]++;
+          else if (lagHours < 24) lagBuckets["6-24h"]++;
+          else if (lagHours < 72) lagBuckets["1-3d"]++;
+          else if (lagHours < 168) lagBuckets["3-7d"]++;
+          else lagBuckets["7d+"]++;
+        }
+        return { labels: Object.keys(lagBuckets), values: Object.values(lagBuckets) };
+      }
+
+      function buildEntityRate(items) {
+        var w = 0, wo = 0;
+        for (var i = 0; i < items.length; i++) {
+          var ents = items[i] && items[i].matched_entities;
+          if (ents && Object.keys(ents).length > 0) w++; else wo++;
+        }
+        return { with: w, without: wo };
+      }
+
+      function buildSourceHealth(items) {
+        var map = new Map();
+        for (var i = 0; i < items.length; i++) {
+          var s = (items[i] && items[i].source) ? String(items[i].source).trim() : "unknown";
+          map.set(s || "unknown", (map.get(s || "unknown") || 0) + 1);
+        }
+        var pairs = Array.from(map.entries()).sort(function(a, b) { return b[1] - a[1]; });
+        return { labels: pairs.map(function(p) { return p[0]; }), values: pairs.map(function(p) { return p[1]; }) };
+      }
+
+      if (!window.Chart) return;
+      Chart.defaults.color = "rgba(244,244,247,.76)";
+      Chart.defaults.borderColor = "rgba(244,244,247,.14)";
+      Chart.defaults.font.family = '"Pretendard Variable","Pretendard",system-ui,-apple-system,Segoe UI,sans-serif';
+      Chart.defaults.plugins.legend.labels.color = "rgba(244,244,247,.72)";
+      window.buildAllCharts = function(filteredData) {
+        if (filteredData) articles = filteredData;
+
+      var entityPairs = normalizeEntityPairs(entityCountsRaw)
+        .filter(function(p) { return p[0] && Number.isFinite(p[1]); })
+        .sort(function(a, b) { return b[1] - a[1]; })
+        .slice(0, 12);
+      var timeline = buildTimeline(articles);
+      var sources = buildSources(articles);
+
+      // 1. Entity Distribution (bar)
+      var ec = document.getElementById("chartEntities");
+      if (ec && entityPairs.length) {
+        new Chart(ec.getContext("2d"), {
+          type: "bar",
+          data: { labels: entityPairs.map(function(p){return p[0];}), datasets: [{ label: "count", data: entityPairs.map(function(p){return p[1];}), backgroundColor: "rgba(51,214,197,.35)", borderColor: "rgba(51,214,197,.72)", borderWidth: 1.2, borderRadius: 8 }] },
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      // 2. Timeline (line)
+      var tc = document.getElementById("chartTimeline");
+      if (tc && timeline.labels.length) {
+        new Chart(tc.getContext("2d"), {
+          type: "line",
+          data: { labels: timeline.labels, datasets: [{ label: "articles/day", data: timeline.values, tension: 0.3, fill: true, borderColor: "rgba(246,200,76,.84)", backgroundColor: "rgba(246,200,76,.15)", pointRadius: 3, pointBackgroundColor: "rgba(246,200,76,.84)" }] },
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      // 3. Source Distribution (doughnut)
+      var sc = document.getElementById("chartSources");
+      if (sc && sources.labels.length) {
+        var cols = palette(sources.labels.length);
+        new Chart(sc.getContext("2d"), {
+          type: "doughnut",
+          data: { labels: sources.labels, datasets: [{ label: "articles", data: sources.values, backgroundColor: cols.map(function(c){return c.replace(/[\d.]+\)$/,".35)");}), borderColor: cols.map(function(c){return c.replace(/[\d.]+\)$/,".80)");}), borderWidth: 1.2 }] },
+          options: { cutout: "62%", plugins: { legend: { position: "bottom" } } }
+        });
+      }
+
+      // 4. Data Freshness (bar)
+      var freshnessData = buildFreshness(articles);
+      var fc = document.getElementById("chartFreshness");
+      if (fc && freshnessData.labels.length) {
+        new Chart(fc.getContext("2d"), {
+          type: "bar",
+          data: { labels: freshnessData.labels, datasets: [{ label: "articles", data: freshnessData.values, backgroundColor: "rgba(120,162,255,.35)", borderColor: "rgba(120,162,255,.72)", borderWidth: 1.2, borderRadius: 8 }] },
+          options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      // 5. Entity Extraction Rate (doughnut with center %)
+      var erd = buildEntityRate(articles);
+      var erc = document.getElementById("chartEntityRate");
+      if (erc) {
+        var total = erd.with + erd.without;
+        var pct = total > 0 ? Math.round((erd.with / total) * 100) : 0;
+        var centerPlugin = {
+          id: "textCenter",
+          beforeDatasetsDraw: function(c) {
+            var w = c.chartArea.width, h = c.chartArea.height;
+            var x = c.chartArea.left + w / 2, y = c.chartArea.top + h / 2;
+            c.ctx.save();
+            c.ctx.font = "bold 24px sans-serif";
+            c.ctx.fillStyle = "rgba(244,244,247,.82)";
+            c.ctx.textAlign = "center";
+            c.ctx.textBaseline = "middle";
+            c.ctx.fillText(pct + "%", x, y);
+            c.ctx.restore();
+          }
+        };
+        new Chart(erc.getContext("2d"), {
+          type: "doughnut",
+          data: { labels: ["With entities", "Without entities"], datasets: [{ data: [erd.with, erd.without], backgroundColor: ["rgba(95,222,132,.35)", "rgba(255,91,110,.35)"], borderColor: ["rgba(95,222,132,.80)", "rgba(255,91,110,.80)"], borderWidth: 1.2 }] },
+          options: { cutout: "62%", plugins: { legend: { position: "bottom" }, tooltip: { enabled: true } } },
+          plugins: [centerPlugin]
+        });
+      }
+
+      // 6. Source Health (horizontal bar)
+      var shd = buildSourceHealth(articles);
+      var shc = document.getElementById("chartSourceHealth");
+      if (shc && shd.labels.length) {
+        var shCols = palette(shd.labels.length);
+        new Chart(shc.getContext("2d"), {
+          type: "bar",
+          data: { labels: shd.labels, datasets: [{ label: "articles", data: shd.values, backgroundColor: shCols.map(function(c){return c.replace(/[\d.]+\)$/,".35)");}), borderColor: shCols.map(function(c){return c.replace(/[\d.]+\)$/,".80)");}), borderWidth: 1.2, borderRadius: 8 }] },
+          options: { indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+      }
+      };
+      window.buildAllCharts(articles);
+    })();
+  </script>
+</body>
+</html>
